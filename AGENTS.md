@@ -8,6 +8,8 @@ This guide defines the conventions and best practices for contributors working o
 
 This repository provides **standalone Laravel packages** designed for installation in other Laravel applications. There is **no full Laravel app** in this repo — all logic must remain **framework-integrated but package-isolated**.
 
+Every package must also follow any **Product Requirement Documents (PRDs)** available in the project. PRDs are the **source of truth** for business rules, naming, and behavior. Code must always align with the PRD’s intent and structure.
+
 ---
 
 ## Core Principles
@@ -16,7 +18,8 @@ This repository provides **standalone Laravel packages** designed for installati
 2. Use **strict types** and modern **PHP 8.2+** syntax.
 3. All code must be **stateless**, **framework-aware**, and **application-agnostic**.
 4. Keep everything **self-contained**: no hard dependencies on a consuming app.
-5. Write clear, testable, and deterministic code.
+5. Always reference **PRDs** for functional requirements and naming accuracy.
+6. Write clear, testable, and deterministic code.
 
 ---
 
@@ -68,6 +71,7 @@ package-name/
 * Prefix booleans with `is`, `has`, or `can`.
 * Keep methods short, descriptive, and predictable.
 * Avoid ambiguous names (`handleData()` → `parseWebhookPayload()`).
+* Ensure method and service names match **PRD-defined terminology** when applicable.
 
 ---
 
@@ -88,6 +92,7 @@ package-name/
 4. **Type Safety** — declare all parameter and return types.
 5. **Error Handling** — use custom exceptions for expected failures.
 6. **Dependencies** — keep minimal; prefer Laravel contracts over concrete bindings.
+7. **PRD Alignment** — always verify that logic, method names, and service behavior align with any provided PRDs before implementation.
 
 ---
 
@@ -108,11 +113,12 @@ Before committing any change:
 1. Run Pint for formatting: `./vendor/bin/pint`
 2. Run tests: `composer test`
 3. Verify autoload & discovery: `composer dump-autoload`
-4. Confirm no temporary debugging or unused imports remain.
+4. Confirm PRD alignment for naming and functionality.
+5. Ensure no temporary debugging or unused imports remain.
 
 ---
 
 ## Enforcement
 
-Any contribution that violates these standards will be rejected or revised before merge.
-Every agent is expected to follow this guide to maintain quality and interoperability across packages.
+Any contribution that violates these standards or PRD requirements will be rejected or revised before merge.
+Every agent is expected to follow this guide and maintain alignment between implementation and the project’s PRDs.
