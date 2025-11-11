@@ -55,7 +55,7 @@ Each outbound operation is linked to a single `atlas_relays` record. A relay may
 
 * Executes a synchronous function or Laravel event listener defined in relay configuration.
 * The relay completes when the event handler returns successfully.
-* Any thrown exception sets relay status to `Failed` and logs `failure_reason = EVENT_EXCEPTION`.
+* Any thrown exception sets relay status to `Failed` and logs `failure_reason = EXCEPTION`.
 
 #### Dispatch Mode
 
@@ -130,7 +130,7 @@ Enums\RelayFailure
 | 204  | REDIRECT_HOST_CHANGED | Redirect attempted to a different host (security risk).             |
 | 205  | CONNECTION_ERROR      | Outbound delivery failed due to network, SSL, or DNS issues.        |
 | 206  | CONNECTION_TIMEOUT    | Outbound delivery timed out before receiving a response.            |
-
+| 207  | EXCEPTION            | Uncaught exception during event/dispatch execution. |
 ## Observability & Logging
 
 * Each outbound record logs:

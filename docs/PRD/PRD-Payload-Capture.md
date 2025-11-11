@@ -105,7 +105,7 @@ Enums\RelayFailure
 | 204  | REDIRECT_HOST_CHANGED | Redirect attempted to a different host (security risk).             |
 | 205  | CONNECTION_ERROR      | Outbound delivery failed due to network, SSL, or DNS issues.        |
 | 206  | CONNECTION_TIMEOUT    | Outbound delivery timed out before receiving a response.            |
-
+| 207  | EXCEPTION            | Uncaught exception during event/dispatch execution. |
 ## Cache Behavior
 
 * Route lookups cached by (domain, path, method) key for **20 minutes**.
