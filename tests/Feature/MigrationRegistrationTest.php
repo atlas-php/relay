@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AtlasRelay\Tests\Feature;
 
+use AtlasRelay\Models\Relay;
 use AtlasRelay\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 
@@ -13,7 +14,10 @@ class MigrationRegistrationTest extends TestCase
     {
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
 
-        $this->assertTrue(Schema::hasColumns('atlas_relays', [
+        $relaysTable = config('atlas-relay.tables.relays');
+        $routesTable = config('atlas-relay.tables.relay_routes');
+
+        $this->assertTrue(Schema::hasColumns($relaysTable, [
             'request_source',
             'headers',
             'payload',
@@ -32,7 +36,7 @@ class MigrationRegistrationTest extends TestCase
             'retry_at',
         ]));
 
-        $this->assertTrue(Schema::hasColumns('atlas_relay_routes', [
+        $this->assertTrue(Schema::hasColumns($routesTable, [
             'method',
             'path',
             'type',
@@ -46,8 +50,30 @@ class MigrationRegistrationTest extends TestCase
             'http_timeout_seconds',
         ]));
 
-        $this->assertTrue(Schema::hasTable('atlas_relay_logs'));
-        $this->assertTrue(Schema::hasTable('atlas_relay_archives'));
-        $this->assertTrue(Schema::hasTable('atlas_relay_log_archives'));
+        $this->assertTrue(Schema::hasTable(config('atlas-relay.tables.relay_logs')));
+        $this->assertTrue(Schema::hasTable(config('atlas-relay.tables.relay_archives')));
+        $this->assertTrue(Schema::hasTable(config('atlas-relay.tables.relay_log_archives')));
+    }
+
+    public function test_table_names_can_be_configured_via_config_file(): void
+    {
+        config()->set('atlas-relay.tables', [
+            'relays' => 'custom_relays',
+            'relay_logs' => 'custom_relay_logs',
+            'relay_routes' => 'custom_relay_routes',
+            'relay_archives' => 'custom_relay_archives',
+            'relay_log_archives' => 'custom_relay_log_archives',
+        ]);
+
+        $this->artisan('migrate:fresh', ['--database' => 'testbench'])->run();
+
+        $this->assertTrue(Schema::hasTable('custom_relays'));
+        $this->assertTrue(Schema::hasTable('custom_relay_logs'));
+        $this->assertTrue(Schema::hasTable('custom_relay_routes'));
+        $this->assertTrue(Schema::hasTable('custom_relay_archives'));
+        $this->assertTrue(Schema::hasTable('custom_relay_log_archives'));
+
+        $this->assertFalse(Schema::hasTable('atlas_relays'));
+        $this->assertSame('custom_relays', (new Relay())->getTable());
     }
 }

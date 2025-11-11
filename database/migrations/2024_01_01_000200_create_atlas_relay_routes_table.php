@@ -10,7 +10,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('atlas_relay_routes', function (Blueprint $table): void {
+        $tableName = config('atlas-relay.tables.relay_routes', 'atlas_relay_routes');
+
+        Schema::create($tableName, function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('identifier')->nullable();
             $table->string('method', 16);
@@ -37,6 +39,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('atlas_relay_routes');
+        $tableName = config('atlas-relay.tables.relay_routes', 'atlas_relay_routes');
+
+        Schema::dropIfExists($tableName);
     }
 };

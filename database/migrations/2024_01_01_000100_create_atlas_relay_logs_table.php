@@ -10,7 +10,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('atlas_relay_logs', function (Blueprint $table): void {
+        $tableName = config('atlas-relay.tables.relay_logs', 'atlas_relay_logs');
+
+        Schema::create($tableName, function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('relay_id')->index();
             $table->string('stage', 64);
@@ -24,6 +26,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('atlas_relay_logs');
+        $tableName = config('atlas-relay.tables.relay_logs', 'atlas_relay_logs');
+
+        Schema::dropIfExists($tableName);
     }
 };

@@ -15,6 +15,8 @@ class AtlasRelayServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/../../config/atlas-relay.php', 'atlas-relay');
+
         $this->app->singleton(RelayManagerInterface::class, static fn (): RelayManager => new RelayManager());
         $this->app->alias(RelayManagerInterface::class, RelayManager::class);
         $this->app->alias(RelayManagerInterface::class, 'atlas-relay.manager');
@@ -28,6 +30,10 @@ class AtlasRelayServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../../database/migrations' => database_path('migrations'),
             ], 'atlas-relay-migrations');
+
+            $this->publishes([
+                __DIR__ . '/../../config/atlas-relay.php' => config_path('atlas-relay.php'),
+            ], 'atlas-relay-config');
         }
     }
 }
