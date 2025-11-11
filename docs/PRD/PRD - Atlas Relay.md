@@ -232,6 +232,11 @@ Archiving runs nightly at 10 PM EST; purging runs nightly at 11 PM EST.
 
 ---
 
+## Enum Namespace
+
+* Enums belong to the Atlas Relay package namespace (`Enums`) rather than the host application's namespace.
+* All enum references (e.g., `Enums\RelayMode`, `Enums\RelayFailure`) are defined within the package for consistency.
+
 ## Notes
 
 * Relay-level configuration is persisted on creation (from route defaults or API) and governs execution for the life of the relay.

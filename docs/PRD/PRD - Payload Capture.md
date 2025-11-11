@@ -86,7 +86,7 @@ All payloads are persisted to the `atlas_relays` table (shared lifecycle model) 
 Failure reasons are defined and managed centrally via the PHP enum:
 
 ```php
-App\Enums\RelayFailure
+Enums\RelayFailure
 ```
 
 * **Stored in database as nullable INT.**
