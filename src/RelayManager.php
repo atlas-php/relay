@@ -16,6 +16,6 @@ class RelayManager implements RelayManagerInterface
 
     public function payload(mixed $payload): RelayBuilder
     {
-        return (new RelayBuilder())->payload($payload);
+        return (new RelayBuilder)->payload($payload);
     }
 }

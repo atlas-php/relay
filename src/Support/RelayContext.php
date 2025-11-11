@@ -11,6 +11,5 @@ class RelayContext
     public function __construct(
         public readonly ?Request $request,
         public readonly mixed $payload
-    ) {
-    }
+    ) {}
 }

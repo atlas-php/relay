@@ -246,12 +246,11 @@ Contributions to routing, visibility, or lifecycle handling are encouraged.
 ### Local Setup
 ```bash
 composer install
-php artisan migrate
 ```
 
-Run tests:
+Run tests for the package (no Laravel app context required):
 ```bash
-php artisan test
+composer test
 ```
 
 ---
