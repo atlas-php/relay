@@ -7,6 +7,9 @@ namespace AtlasRelay;
 use AtlasRelay\Contracts\RelayManagerInterface;
 use Illuminate\Http\Request;
 
+/**
+ * Default RelayManager that hands back configured builders per the PRD.
+ */
 class RelayManager implements RelayManagerInterface
 {
     public function request(Request $request): RelayBuilder

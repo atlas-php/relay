@@ -8,6 +8,9 @@ use AtlasRelay\Contracts\RelayManagerInterface;
 use AtlasRelay\RelayManager;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Registers the relay manager singleton and facade accessor for packages.
+ */
 class AtlasRelayServiceProvider extends ServiceProvider
 {
     public function register(): void

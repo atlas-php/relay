@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * Facade entrypoint that mirrors the fluent API defined by the PRD.
+ *
  * @method static RelayBuilder request(Request $request)
  * @method static RelayBuilder payload(mixed $payload)
  */
