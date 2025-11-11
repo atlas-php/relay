@@ -154,9 +154,9 @@ Reports can be exported for compliance or performance tracking.
 
 ## Dependencies & Integration
 
-* **Depends on:** Relay Lifecycle & Outbound Delivery (for source data)
-* **Feeds into:** Reporting & Observability modules
-* **Integrates with:** Queue and scheduled job systems
+* **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
+* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
+* **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---
 
@@ -174,3 +174,12 @@ Reports can be exported for compliance or performance tracking.
 * Should archive logs be compressed or left in raw JSON for queryability?
 * Should external log sink support (e.g., CloudWatch, Loki) be part of core or separate extension?
 * Should purge operations support soft-delete with delayed permanent deletion?
+
+---
+
+### See Also
+* [PRD — Atlas Relay](./PRD-Atlas-Relay.md)
+* [PRD — Payload Capture](./PRD-Payload-Capture.md)
+* [PRD — Routing](./PRD-Routing.md)
+* [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md)
+* [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)

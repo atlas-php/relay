@@ -226,9 +226,9 @@ Archiving runs nightly at 10 PM EST; purging runs nightly at 11 PM EST.
 
 ## Dependencies & References
 
-* **Depends on:** Domains & Routes Registry
-* **Feeds into:** Archiving & Retention Module
-* **Uses:** Application queue for asynchronous execution
+* **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
+* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
+* **Uses:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) internal queue and async processing
 
 ---
 
@@ -247,3 +247,13 @@ Archiving runs nightly at 10 PM EST; purging runs nightly at 11 PM EST.
 * All other relay types complete or fail based on execution or handler results.
 * Relay API provides a fluent, intuitive interface for developers while maintaining complete traceability.
 * All operations are idempotent — retries and replays must never duplicate side effects.
+
+
+---
+
+### See Also
+* [PRD — Atlas Relay](./PRD-Atlas-Relay.md)
+* [PRD — Payload Capture](./PRD-Payload-Capture.md)
+* [PRD — Routing](./PRD-Routing.md)
+* [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md)
+* [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)

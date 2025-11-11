@@ -110,7 +110,7 @@ Sends an outbound webhook directly without route lookup.
 Every webhook or payload relay is tracked from start to finish in the `atlas_relays` table:
 
 | Status         | Description                                 |
-| -------------- | ------------------------------------------- |
+|----------------|---------------------------------------------|
 | **Queued**     | Payload recorded and awaiting relay action. |
 | **Processing** | Relay executing or event dispatched.        |
 | **Failed**     | Error occurred, `failure_reason` recorded.  |
@@ -155,7 +155,7 @@ Every relay is a complete, searchable audit trail of webhook traffic.
 ## 🗄️ Archiving & Retention
 
 | Variable                   | Default | Description                              |
-| -------------------------- | ------- | ---------------------------------------- |
+|----------------------------|---------|------------------------------------------|
 | `ATLAS_RELAY_ARCHIVE_DAYS` | 30      | Days before relays move to archive.      |
 | `ATLAS_RELAY_PURGE_DAYS`   | 180     | Days before archived relays are deleted. |
 
@@ -166,7 +166,7 @@ Archiving runs nightly at **10 PM EST**; purging at **11 PM EST**.
 ## 🧮 Automation Jobs
 
 | Process              | Frequency        | Description                          |
-| -------------------- | ---------------- | ------------------------------------ |
+|----------------------|------------------|--------------------------------------|
 | Retry overdue        | Every minute     | Retries failed outbound webhooks.    |
 | Requeue stuck relays | Every 10 minutes | Restores relays stuck in processing. |
 | Timeout enforcement  | Hourly           | Marks expired relays as failed.      |
@@ -178,7 +178,7 @@ Archiving runs nightly at **10 PM EST**; purging at **11 PM EST**.
 ## ⚙️ Configuration
 
 | Variable                   | Description                              |
-| -------------------------- | ---------------------------------------- |
+|----------------------------|------------------------------------------|
 | `QUEUE_CONNECTION`         | Queue backend for async dispatches.      |
 | `ATLAS_RELAY_ARCHIVE_DAYS` | Days before relays are archived.         |
 | `ATLAS_RELAY_PURGE_DAYS`   | Days before archived relays are deleted. |
@@ -188,7 +188,7 @@ Archiving runs nightly at **10 PM EST**; purging at **11 PM EST**.
 ## 🚦 Error Mapping
 
 | Condition             | Result                  |
-| --------------------- | ----------------------- |
+|-----------------------|-------------------------|
 | HTTP not 2xx          | `HTTP_ERROR`            |
 | Too many redirects    | `TOO_MANY_REDIRECTS`    |
 | Redirect host changed | `REDIRECT_HOST_CHANGED` |

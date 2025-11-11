@@ -147,8 +147,8 @@ Each relay passes through a defined sequence of states that represent its progre
 
 ## Dependencies & Integration
 
-* **Depends on:** Domains & Routes Registry (for route resolution)
-* **Feeds into:** Relay Processing, Event Dispatch, Outbound Delivery
+* **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
+* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
 
 ---
 
@@ -166,3 +166,12 @@ Each relay passes through a defined sequence of states that represent its progre
 * Should malformed JSON payloads be normalized (e.g., raw string storage) or rejected outright?
 * Should cached route lookups include wildcard domain support?
 * Should payload capture support content-types other than JSON (e.g., XML or form-encoded)?
+
+---
+
+### See Also
+* [PRD — Atlas Relay](./PRD-Atlas-Relay.md)
+* [PRD — Payload Capture](./PRD-Payload-Capture.md)
+* [PRD — Routing](./PRD-Routing.md)
+* [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md)
+* [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)

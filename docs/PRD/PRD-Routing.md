@@ -172,9 +172,9 @@ Each relay passes through a defined sequence of states that represent its progre
 
 ## Dependencies & Integration
 
-* **Depends on:** Payload Capture
-* **Feeds into:** Outbound Delivery
-* **Integrates with:** Cache subsystem and optional programmatic providers
+* **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
+* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
+* **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---
 
@@ -192,3 +192,12 @@ Each relay passes through a defined sequence of states that represent its progre
 * Should programmatic providers be able to return multiple possible destinations (fan-out)?
 * Should route resolution log payload attributes used for matching?
 * Should cached lookups persist across deployments or reset on startup?
+
+---
+
+### See Also
+* [PRD — Atlas Relay](./PRD-Atlas-Relay.md)
+* [PRD — Payload Capture](./PRD-Payload-Capture.md)
+* [PRD — Routing](./PRD-Routing.md)
+* [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md)
+* [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)

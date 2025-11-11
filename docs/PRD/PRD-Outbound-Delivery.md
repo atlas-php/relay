@@ -189,9 +189,9 @@ Archiving runs nightly at 10 PM EST; purging at 11 PM EST.
 
 ## Dependencies & Integration
 
-* **Depends on:** Relay Lifecycle Management, Routing & Domain Registry
-* **Feeds into:** Archiving Module, Observability Dashboards
-* **Integrates with:** Laravel Queue and Event systems
+* **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
+* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
+* **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---
 
@@ -209,3 +209,12 @@ Archiving runs nightly at 10 PM EST; purging at 11 PM EST.
 * Should event and dispatch failures follow the same retry policy as HTTP requests?
 * Should outbound fan-out (multiple destinations per relay) be supported in core, or as an extension?
 * Should outbound results be summarized into a single relay status or multiple partial states?
+
+---
+
+### See Also
+* [PRD — Atlas Relay](./PRD-Atlas-Relay.md)
+* [PRD — Payload Capture](./PRD-Payload-Capture.md)
+* [PRD — Routing](./PRD-Routing.md)
+* [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md)
+* [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
