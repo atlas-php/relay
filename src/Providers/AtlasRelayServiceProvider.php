@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace AtlasRelay\Providers;
 
+use AtlasRelay\Console\Commands\ArchiveRelaysCommand;
+use AtlasRelay\Console\Commands\EnforceRelayTimeoutsCommand;
+use AtlasRelay\Console\Commands\PurgeRelayArchivesCommand;
+use AtlasRelay\Console\Commands\RequeueStuckRelaysCommand;
+use AtlasRelay\Console\Commands\RetryOverdueRelaysCommand;
 use AtlasRelay\Contracts\RelayManagerInterface;
 use AtlasRelay\Models\Relay;
 use AtlasRelay\Models\RelayRoute;
@@ -60,6 +65,14 @@ class AtlasRelayServiceProvider extends ServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                RetryOverdueRelaysCommand::class,
+                RequeueStuckRelaysCommand::class,
+                EnforceRelayTimeoutsCommand::class,
+                ArchiveRelaysCommand::class,
+                PurgeRelayArchivesCommand::class,
+            ]);
+
             $this->publishes([
                 __DIR__.'/../../database/migrations' => database_path('migrations'),
             ], 'atlas-relay-migrations');

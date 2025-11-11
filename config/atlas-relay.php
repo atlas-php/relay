@@ -53,5 +53,7 @@ return [
         'timeout_enforcement_cron' => env('ATLAS_RELAY_TIMEOUT_CRON', '0 * * * *'),
         'archive_cron' => env('ATLAS_RELAY_ARCHIVE_CRON', '0 22 * * *'),
         'purge_cron' => env('ATLAS_RELAY_PURGE_CRON', '0 23 * * *'),
+        'stuck_threshold_minutes' => env('ATLAS_RELAY_STUCK_THRESHOLD_MINUTES', 10),
+        'timeout_buffer_seconds' => env('ATLAS_RELAY_TIMEOUT_BUFFER_SECONDS', 0),
     ],
 ];

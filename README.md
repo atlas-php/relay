@@ -183,6 +183,21 @@ Archiving runs nightly at **10 PM EST**, and purging at **11 PM EST**.
 | Archiving            | Daily (10 PM)    | Moves completed relays to archive.   |
 | Purging              | Daily (11 PM)    | Removes expired archive data.        |
 
+### Scheduling
+
+Register the automation cadence inside your `Console\Kernel`:
+
+```php
+use AtlasRelay\Support\RelayScheduler;
+
+protected function schedule(Schedule $schedule): void
+{
+    RelayScheduler::register($schedule);
+}
+```
+
+Cron expressions and thresholds can be overridden via the `atlas-relay.automation` config options published with the package.
+
 See [Atlas Relay PRD](./docs/PRD/PRD-Atlas-Relay.md) for complete job automation details.
 
 ---
