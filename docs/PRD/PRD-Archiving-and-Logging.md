@@ -86,7 +86,7 @@ Archive tables mirror live schemas to ensure direct record mapping.
 | Archive Table              | Description                                            |
 |----------------------------|--------------------------------------------------------|
 | `atlas_relay_archives`     | Stores archived relay records.                         |
-| `atlas_relay_log_archives` | Stores archived log records linked to archived relays. |
+| `atlas_relay_archives` | Stores all archived relay records, including outbound delivery data.
 
 ### 3. Archive Process
 
@@ -155,7 +155,6 @@ Reports can be exported for compliance or performance tracking.
 ## Dependencies & Integration
 
 * **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
-* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
 * **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---

@@ -173,7 +173,6 @@ Each relay passes through a defined sequence of states that represent its progre
 ## Dependencies & Integration
 
 * **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
-* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
 * **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---

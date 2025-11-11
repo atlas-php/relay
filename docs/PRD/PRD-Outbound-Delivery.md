@@ -40,26 +40,6 @@ Each outbound operation is linked to a single `atlas_relays` record. A relay may
 
 ---
 
-### 2. Outbound Record Creation
-
-When a relay transitions from capture to outbound stage, a new record is created in `atlas_relay_outbounds` with metadata describing the target, mode, and execution state.
-
-| Field              | Description                                  |
-|--------------------|----------------------------------------------|
-| `id`               | Unique outbound record ID.                   |
-| `relay_id`         | Foreign reference to `atlas_relays`.         |
-| `destination_url`  | HTTP destination when mode = HTTP.           |
-| `headers`          | Headers applied to outbound request.         |
-| `mode`             | Outbound mode (`http`, `event`, `dispatch`). |
-| `response_status`  | HTTP or internal response code.              |
-| `response_payload` | Response body or serialized event result.    |
-| `failure_reason`   | Enum describing failure cause.               |
-| `attempt`          | Current retry attempt number.                |
-| `retry_at`         | Timestamp for next retry if applicable.      |
-| `created_at`       | Record creation timestamp.                   |
-| `updated_at`       | Last update timestamp.                       |
-
----
 
 ### 3. Outbound Execution Rules
 
@@ -190,7 +170,6 @@ Archiving runs nightly at 10 PM EST; purging at 11 PM EST.
 ## Dependencies & Integration
 
 * **Depends on:** [PRD — Payload Capture](./PRD-Payload-Capture.md), [PRD — Routing](./PRD-Routing.md)
-* **Feeds into:** [PRD — Outbound Delivery](./PRD-Outbound-Delivery.md), [PRD — Archiving & Logging](./PRD-Archiving-and-Logging.md)
 * **Integrates with:** [PRD — Atlas Relay](./PRD-Atlas-Relay.md) lifecycle and job automation
 
 ---
