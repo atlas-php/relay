@@ -83,10 +83,9 @@ The following configuration columns must exist in both active and archive schema
 
 Archive tables mirror live schemas to ensure direct record mapping.
 
-| Archive Table              | Description                                            |
-|----------------------------|--------------------------------------------------------|
-| `atlas_relay_archives`     | Stores archived relay records.                         |
-| `atlas_relay_archives` | Stores all archived relay records, including outbound delivery data.
+| Archive Table          | Description                                                      |
+|------------------------|------------------------------------------------------------------|
+| `atlas_relay_archives` | Stores archived relay records, including outbound delivery data. |
 
 ### 3. Archive Process
 

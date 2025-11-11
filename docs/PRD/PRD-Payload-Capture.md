@@ -52,7 +52,7 @@ Payloads may originate from external HTTP requests, internal dispatches, or prog
 
 If AutoRoute or route mapping is enabled:
 
-* The system attempts to resolve a route (method + path) from the Domains & Routes registry.
+* The system attempts to resolve a route (method + path) from the Routing module.
 * If no match is found, the record is stored as `Failed` with `failure_reason = NO_ROUTE_MATCH`.
 * Route matches are cached for **20 minutes** to minimize lookup latency.
 * Cache invalidates automatically when domain or route configurations are modified.
