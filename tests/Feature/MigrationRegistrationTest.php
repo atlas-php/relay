@@ -93,6 +93,6 @@ class MigrationRegistrationTest extends TestCase
         $this->assertTrue(Schema::hasTable('custom_relay_archives'));
 
         $this->assertFalse(Schema::hasTable('atlas_relays'));
-        $this->assertSame('custom_relays', (new Relay())->getTable());
+        $this->assertSame('custom_relays', (new Relay)->getTable());
     }
 }
