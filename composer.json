@@ -1,0 +1,39 @@
+{
+    "name": "atlasvue/atlas-relay",
+    "description": "Unified Laravel relay lifecycle for capturing, routing, and delivering payloads.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "AtlasRelay\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AtlasRelay\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "AtlasRelay\\Providers\\AtlasRelayServiceProvider"
+            ],
+            "aliases": {
+                "Relay": "AtlasRelay\\Facades\\Relay"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
