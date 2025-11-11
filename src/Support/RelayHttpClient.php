@@ -7,11 +7,15 @@ namespace AtlasRelay\Support;
 use AtlasRelay\Enums\RelayFailure;
 use AtlasRelay\Models\Relay;
 use AtlasRelay\Services\RelayLifecycleService;
+use GuzzleHttp\Exception\TooManyRedirectsException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Str;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 use RuntimeException;
 
 /**
@@ -67,6 +71,7 @@ class RelayHttpClient
 
         $relay = $this->lifecycle->startAttempt($this->relay);
         $startedAt = microtime(true);
+        $this->applyRedirectGuards($url, $relay, $startedAt);
 
         try {
             /** @var Response $response */
@@ -77,6 +82,11 @@ class RelayHttpClient
             $this->lifecycle->markFailed($relay, $failure, [], $duration);
 
             throw $exception;
+        } catch (TooManyRedirectsException $exception) {
+            $duration = $this->durationSince($startedAt);
+            $this->lifecycle->markFailed($relay, RelayFailure::TOO_MANY_REDIRECTS, [], $duration);
+
+            throw new RuntimeException('Redirect limit exceeded for relay HTTP delivery.', 0, $exception);
         } catch (RequestException $exception) {
             $duration = $this->durationSince($startedAt);
             $this->lifecycle->markFailed($relay, RelayFailure::OUTBOUND_HTTP_ERROR, [], $duration);
@@ -181,5 +191,43 @@ class RelayHttpClient
         $truncated = strlen((string) $body) > strlen((string) ($payload ?? ''));
 
         return [$payload, $truncated];
+    }
+
+    private function applyRedirectGuards(string $originalUrl, Relay $relay, float $startedAt): void
+    {
+        $originalHost = parse_url($originalUrl, PHP_URL_HOST);
+        $maxRedirects = (int) config('atlas-relay.http.max_redirects', 3);
+
+        $this->pendingRequest = $this->pendingRequest->withOptions([
+            'allow_redirects' => [
+                'max' => $maxRedirects,
+                'strict' => true,
+                'referer' => false,
+                'track_redirects' => true,
+                'on_redirect' => function (
+                    RequestInterface $request,
+                    ResponseInterface $response,
+                    UriInterface $uri
+                ) use ($relay, $startedAt, $originalHost) {
+                    $targetHost = $uri->getHost();
+
+                    if ($originalHost === null || $targetHost === null) {
+                        return;
+                    }
+
+                    if (! hash_equals($originalHost, $targetHost)) {
+                        $duration = $this->durationSince($startedAt);
+                        $this->lifecycle->markFailed(
+                            $relay,
+                            RelayFailure::REDIRECT_HOST_CHANGED,
+                            [],
+                            $duration
+                        );
+
+                        throw new RuntimeException('Redirect attempted to a different host.');
+                    }
+                },
+            ],
+        ]);
     }
 }
