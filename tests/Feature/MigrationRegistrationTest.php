@@ -17,24 +17,43 @@ class MigrationRegistrationTest extends TestCase
         $relaysTable = config('atlas-relay.tables.relays');
         $routesTable = config('atlas-relay.tables.relay_routes');
 
-        $this->assertTrue(Schema::hasColumns($relaysTable, [
+        $expectedLifecycleColumns = [
             'request_source',
             'headers',
             'payload',
             'status',
             'mode',
+            'route_id',
+            'route_identifier',
+            'destination_type',
+            'destination',
             'failure_reason',
             'response_status',
             'response_payload',
+            'response_payload_truncated',
             'is_retry',
             'retry_seconds',
             'retry_max_attempts',
+            'attempt_count',
+            'max_attempts',
             'is_delay',
             'delay_seconds',
             'timeout_seconds',
             'http_timeout_seconds',
+            'last_attempt_duration_ms',
             'retry_at',
-        ]));
+            'first_attempted_at',
+            'last_attempted_at',
+            'processing_started_at',
+            'processing_finished_at',
+            'completed_at',
+            'failed_at',
+            'cancelled_at',
+            'archived_at',
+            'meta',
+        ];
+
+        $this->assertTrue(Schema::hasColumns($relaysTable, $expectedLifecycleColumns));
 
         $this->assertTrue(Schema::hasColumns($routesTable, [
             'method',
@@ -50,7 +69,13 @@ class MigrationRegistrationTest extends TestCase
             'http_timeout_seconds',
         ]));
 
-        $this->assertTrue(Schema::hasTable(config('atlas-relay.tables.relay_archives')));
+        $this->assertTrue(Schema::hasColumns(
+            config('atlas-relay.tables.relay_archives'),
+            array_merge($expectedLifecycleColumns, [
+                'created_at',
+                'updated_at',
+            ])
+        ));
     }
 
     public function test_table_names_can_be_configured_via_config_file(): void

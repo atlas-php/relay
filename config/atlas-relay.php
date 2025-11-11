@@ -15,7 +15,23 @@ return [
         'chunk_size' => env('ATLAS_RELAY_ARCHIVE_CHUNK_SIZE', 500),
     ],
 
+    'lifecycle' => [
+        'default_retry_seconds' => env('ATLAS_RELAY_DEFAULT_RETRY_SECONDS', 60),
+        'default_retry_max_attempts' => env('ATLAS_RELAY_DEFAULT_RETRY_MAX_ATTEMPTS', 3),
+        'default_delay_seconds' => env('ATLAS_RELAY_DEFAULT_DELAY_SECONDS', 0),
+        'default_timeout_seconds' => env('ATLAS_RELAY_DEFAULT_TIMEOUT_SECONDS', 30),
+        'default_http_timeout_seconds' => env('ATLAS_RELAY_DEFAULT_HTTP_TIMEOUT_SECONDS', 30),
+    ],
+
     'routing' => [
         'cache_ttl_seconds' => env('ATLAS_RELAY_ROUTE_CACHE_SECONDS', 1200),
+    ],
+
+    'automation' => [
+        'retry_overdue_cron' => env('ATLAS_RELAY_RETRY_CRON', '*/1 * * * *'),
+        'stuck_requeue_cron' => env('ATLAS_RELAY_STUCK_CRON', '*/10 * * * *'),
+        'timeout_enforcement_cron' => env('ATLAS_RELAY_TIMEOUT_CRON', '0 * * * *'),
+        'archive_cron' => env('ATLAS_RELAY_ARCHIVE_CRON', '0 22 * * *'),
+        'purge_cron' => env('ATLAS_RELAY_PURGE_CRON', '0 23 * * *'),
     ],
 ];
