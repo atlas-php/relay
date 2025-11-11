@@ -163,8 +163,8 @@ class RelayCaptureService
     }
 
     /**
-     * @param array<string, bool> $whitelist
-     * @param array<string, bool> $sensitive
+     * @param  array<string, bool>  $whitelist
+     * @param  array<string, bool>  $sensitive
      */
     private function shouldMaskHeader(string $header, array $whitelist, array $sensitive): bool
     {
@@ -176,7 +176,7 @@ class RelayCaptureService
     }
 
     /**
-     * @param array<int, string> $headers
+     * @param  array<int, string>  $headers
      * @return array<string, bool>
      */
     private function prepareHeaderLookup(array $headers): array
