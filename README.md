@@ -215,18 +215,6 @@ For full schema and retention behavior, see [Archiving & Logging](./docs/PRD/PRD
 
 ---
 
-## 🤝 Contributing
-
-We welcome improvements! Please review the [Contributing Guide](./CONTRIBUTING.md) before opening a pull request. It
-covers the mandatory Pint/PHPStan/test workflow, the PRD-driven standards outlined in [AGENTS.md](./AGENTS.md), and the
-branching + Conventional Commit rules we enforce across the project. See [AGENTS.md](./AGENTS.md) for the agent workflow
-and PRD alignment expectations that apply to every change.
-
-Archiving runs nightly at **10 PM EST**, and purging at **11 PM EST**.  
-(Defined in [Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md))
-
----
-
 ## 🧮 Automation Jobs
 
 | Process              | Frequency        | Description                          |
@@ -335,6 +323,12 @@ Relay::payload(['status' => 'processed'])
 Relay::payload(['id' => 42])
     ->dispatchEvent(fn() => ExampleJob::dispatch());
 ```
+
+---
+
+## 🤝 Contributing
+
+Please review the [Contributing Guide](./CONTRIBUTING.md) before opening a pull request. It covers the mandatory Pint/PHPStan/test workflow, the PRD-driven standards outlined in [AGENTS.md](./AGENTS.md), and the  branching + Conventional Commit rules we enforce across the project. See [AGENTS.md](./AGENTS.md) for the agent workflow and PRD alignment expectations that apply to every change.
 
 ---
 
