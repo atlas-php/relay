@@ -1,4 +1,4 @@
-# Atlas Relay
+# Atlas Relay for Laravel
 
 > A unified Laravel relay system for **sending and receiving webhooks** — built for **reliability**, **observability**, and **control**. Capture, process, and relay any payload with full lifecycle visibility.
 
