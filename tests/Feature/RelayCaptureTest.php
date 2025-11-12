@@ -38,8 +38,9 @@ class RelayCaptureTest extends TestCase
         $this->assertSame('event', $relay->mode);
         $this->assertSame('127.0.0.1', $relay->request_source);
         $this->assertSame(['status' => 'queued'], $relay->payload);
-        $this->assertSame('***', $relay->headers['authorization']);
-        $this->assertSame('Value', $relay->headers['x-custom']);
+        $headers = $relay->headers ?? [];
+        $this->assertSame('***', $headers['authorization'] ?? null);
+        $this->assertSame('Value', $headers['x-custom'] ?? null);
         $this->assertTrue($relay->is_retry);
         $this->assertSame(120, $relay->retry_seconds);
         $this->assertSame(5, $relay->retry_max_attempts);
@@ -47,7 +48,8 @@ class RelayCaptureTest extends TestCase
         $this->assertSame(10, $relay->delay_seconds);
         $this->assertSame(45, $relay->timeout_seconds);
         $this->assertSame(30, $relay->http_timeout_seconds);
-        $this->assertSame(['source' => 'test'], $relay->meta);
+        $meta = $relay->meta ?? [];
+        $this->assertSame('test', $meta['source'] ?? null);
     }
 
     public function test_whitelisted_headers_are_not_masked(): void
@@ -63,7 +65,8 @@ class RelayCaptureTest extends TestCase
 
         $relay = Relay::request($request)->capture();
 
-        $this->assertSame('12345', $relay->headers['x-secret-token']);
+        $headers = $relay->headers ?? [];
+        $this->assertSame('12345', $headers['x-secret-token'] ?? null);
 
         config()->set('atlas-relay.capture.sensitive_headers', $originalSensitive);
         config()->set('atlas-relay.capture.header_whitelist', $originalWhitelist);
@@ -78,10 +81,11 @@ class RelayCaptureTest extends TestCase
         $this->assertSame('failed', $relay->status);
         $this->assertSame(RelayFailure::PAYLOAD_TOO_LARGE->value, $relay->failure_reason);
         $this->assertNull($relay->payload);
-        $this->assertArrayHasKey('validation_errors', $relay->meta);
+        $meta = $relay->meta ?? [];
+        $this->assertArrayHasKey('validation_errors', $meta);
         $this->assertSame(
             'Payload exceeds configured limit of 65536 bytes.',
-            $relay->meta['validation_errors']['payload'][0]
+            $meta['validation_errors']['payload'][0] ?? null
         );
     }
 
@@ -94,6 +98,7 @@ class RelayCaptureTest extends TestCase
 
         $this->assertSame('failed', $relay->status);
         $this->assertSame(RelayFailure::INVALID_PAYLOAD->value, $relay->failure_reason);
-        $this->assertSame('Invalid structure.', $relay->meta['validation_errors']['payload'][0]);
+        $meta = $relay->meta ?? [];
+        $this->assertSame('Invalid structure.', $meta['validation_errors']['payload'][0] ?? null);
     }
 }

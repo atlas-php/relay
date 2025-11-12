@@ -41,10 +41,10 @@ class HttpDeliveryTest extends TestCase
 
         $this->assertTrue($response->successful());
 
-        $relay = $builder->relay();
-        $this->assertSame('completed', $relay?->status);
-        $this->assertSame(200, $relay?->response_status);
-        $this->assertSame(['ok' => true], $relay?->response_payload);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('completed', $relay->status);
+        $this->assertSame(200, $relay->response_status);
+        $this->assertSame(['ok' => true], $relay->response_payload);
     }
 
     public function test_http_failure_records_failure_reason(): void
@@ -59,9 +59,9 @@ class HttpDeliveryTest extends TestCase
 
         $this->assertFalse($response->successful());
 
-        $relay = $builder->relay();
-        $this->assertSame('failed', $relay?->status);
-        $this->assertSame(RelayFailure::OUTBOUND_HTTP_ERROR->value, $relay?->failure_reason);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('failed', $relay->status);
+        $this->assertSame(RelayFailure::OUTBOUND_HTTP_ERROR->value, $relay->failure_reason);
     }
 
     public function test_http_requires_https_targets(): void
@@ -90,9 +90,9 @@ class HttpDeliveryTest extends TestCase
             $this->assertStringContainsString('timed out', $exception->getMessage());
         }
 
-        $relay = $builder->relay();
-        $this->assertSame('failed', $relay?->status);
-        $this->assertSame(RelayFailure::CONNECTION_TIMEOUT->value, $relay?->failure_reason);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('failed', $relay->status);
+        $this->assertSame(RelayFailure::CONNECTION_TIMEOUT->value, $relay->failure_reason);
     }
 
     public function test_http_redirect_host_change_records_failure_reason(): void
@@ -125,18 +125,19 @@ class HttpDeliveryTest extends TestCase
             $this->assertSame('Redirect attempted to a different host.', $exception->getMessage());
         }
 
-        $relay = $builder->relay();
-        $this->assertSame('failed', $relay?->status);
-        $this->assertSame(RelayFailure::REDIRECT_HOST_CHANGED->value, $relay?->failure_reason);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('failed', $relay->status);
+        $this->assertSame(RelayFailure::REDIRECT_HOST_CHANGED->value, $relay->failure_reason);
     }
 
     public function test_http_redirect_count_exceeding_limit_records_failure_reason(): void
     {
         $builder = Relay::payload(['status' => 'queued']);
         $client = $builder->http();
-        $relay = $builder->relay();
+        $relay = $this->assertRelayInstance($builder->relay());
 
-        $psrResponse = new PsrResponse(200, [], json_encode(['ok' => true]));
+        $body = json_encode(['ok' => true], JSON_THROW_ON_ERROR);
+        $psrResponse = new PsrResponse(200, [], $body);
         $response = new HttpClientResponse($psrResponse);
         $response->transferStats = new TransferStats(
             new PsrRequest('GET', 'https://example.com/final'),
@@ -158,8 +159,8 @@ class HttpDeliveryTest extends TestCase
             $this->assertSame('Redirect limit exceeded for relay HTTP delivery.', $exception->getMessage());
         }
 
-        $relay = $builder->relay();
-        $this->assertSame('failed', $relay?->status);
-        $this->assertSame(RelayFailure::TOO_MANY_REDIRECTS->value, $relay?->failure_reason);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('failed', $relay->status);
+        $this->assertSame(RelayFailure::TOO_MANY_REDIRECTS->value, $relay->failure_reason);
     }
 }

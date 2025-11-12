@@ -28,9 +28,9 @@ class DispatchDeliveryTest extends TestCase
 
         $builder->dispatchSync(new SuccessfulJob);
 
-        $relay = $builder->relay();
-        $this->assertSame('completed', $relay?->status);
-        $this->assertNull($relay?->failure_reason);
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame('completed', $relay->status);
+        $this->assertNull($relay->failure_reason);
     }
 
     public function test_job_helper_can_mark_failure(): void
@@ -41,9 +41,9 @@ class DispatchDeliveryTest extends TestCase
             $builder->dispatchSync(new FailingJob);
             $this->fail('Expected helper failure.');
         } catch (RelayJobFailedException) {
-            $relay = $builder->relay();
-            $this->assertSame('failed', $relay?->status);
-            $this->assertSame(RelayFailure::CANCELLED->value, $relay?->failure_reason);
+            $relay = $this->assertRelayInstance($builder->relay());
+            $this->assertSame('failed', $relay->status);
+            $this->assertSame(RelayFailure::CANCELLED->value, $relay->failure_reason);
         }
     }
 

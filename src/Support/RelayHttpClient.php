@@ -20,6 +20,13 @@ use RuntimeException;
 
 /**
  * Proxy around Laravel's HTTP client that enforces PRD rules and records relay lifecycle data.
+ *
+ * @method Response get(string $url, mixed ...$arguments)
+ * @method Response post(string $url, mixed ...$arguments)
+ * @method Response put(string $url, mixed ...$arguments)
+ * @method Response patch(string $url, mixed ...$arguments)
+ * @method Response delete(string $url, mixed ...$arguments)
+ * @method Response head(string $url, mixed ...$arguments)
  */
 class RelayHttpClient
 {

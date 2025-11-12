@@ -6,7 +6,6 @@ namespace AtlasRelay\Tests\Feature;
 
 use AtlasRelay\Enums\RelayFailure;
 use AtlasRelay\Facades\Relay;
-use AtlasRelay\Models\Relay as RelayModel;
 use AtlasRelay\Models\RelayRoute;
 use AtlasRelay\Routing\RouteContext;
 use AtlasRelay\Routing\Router;
@@ -32,10 +31,11 @@ class AutoRoutingTest extends TestCase
             'delay_seconds' => 5,
         ]);
 
-        $relay = Relay::request(Request::create('/orders', 'POST'))
-            ->dispatchAutoRoute()
-            ->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(
+            Relay::request(Request::create('/orders', 'POST'))
+                ->dispatchAutoRoute()
+                ->relay()
+        );
 
         $this->assertSame($route->id, $relay->route_id);
         $this->assertSame('auto_route', $relay->mode);
@@ -44,7 +44,8 @@ class AutoRoutingTest extends TestCase
         $this->assertSame(90, $relay->retry_seconds);
         $this->assertTrue($relay->is_delay);
         $this->assertSame(5, $relay->delay_seconds);
-        $this->assertSame(['X-Route' => 'atlas'], $relay->meta['route_headers']);
+        $meta = $relay->meta ?? [];
+        $this->assertSame(['X-Route' => 'atlas'], $meta['route_headers'] ?? null);
     }
 
     public function test_dynamic_route_resolution_captures_parameters(): void
@@ -54,24 +55,32 @@ class AutoRoutingTest extends TestCase
             'destination' => 'https://example.com/leads',
         ]);
 
-        $relay = Relay::request(Request::create('/leads/42', 'POST'))
-            ->dispatchAutoRoute()
-            ->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(
+            Relay::request(Request::create('/leads/42', 'POST'))
+                ->dispatchAutoRoute()
+                ->relay()
+        );
 
-        $this->assertSame('42', $relay->meta['route_parameters']['LEAD_ID']);
+        $meta = $relay->meta ?? [];
+        $this->assertSame('42', $meta['route_parameters']['LEAD_ID'] ?? null);
     }
 
     public function test_programmatic_provider_precedence_and_caching_controls(): void
     {
         /** @var Router $router */
-        $router = $this->app->make(Router::class);
+        $router = app(Router::class);
         $provider = new class implements RoutingProviderInterface
         {
             public string $destination = 'https://provider.test/one';
 
+            public bool $shouldCache = true;
+
             public function determine(RouteContext $context): ?RouteResult
             {
+                if ($context->normalizedPath() === null) {
+                    return null;
+                }
+
                 return new RouteResult(
                     id: null,
                     identifier: 'provider',
@@ -83,31 +92,28 @@ class AutoRoutingTest extends TestCase
 
             public function cacheKey(RouteContext $context): ?string
             {
-                return 'atlas-relay.provider';
+                return $this->shouldCache ? 'atlas-relay.provider' : null;
             }
 
             public function cacheTtlSeconds(): ?int
             {
-                return 600;
+                return $this->shouldCache ? 600 : null;
             }
         };
 
         $router->registerProvider('provider', $provider);
 
         $request = Request::create('/anything', 'POST');
-        $relay = Relay::request($request)->dispatchAutoRoute()->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertNull($relay->route_id);
         $this->assertSame('https://provider.test/one', $relay->destination);
 
         $provider->destination = 'https://provider.test/two';
-        $cachedRelay = Relay::request($request)->dispatchAutoRoute()->relay();
-        self::assertInstanceOf(RelayModel::class, $cachedRelay);
+        $cachedRelay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertSame('https://provider.test/one', $cachedRelay->destination);
 
         $router->flushCache();
-        $refreshedRelay = Relay::request($request)->dispatchAutoRoute()->relay();
-        self::assertInstanceOf(RelayModel::class, $refreshedRelay);
+        $refreshedRelay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertSame('https://provider.test/two', $refreshedRelay->destination);
     }
 
@@ -119,15 +125,13 @@ class AutoRoutingTest extends TestCase
         ]);
 
         $request = Request::create('/cache-test', 'POST');
-        $first = Relay::request($request)->dispatchAutoRoute()->relay();
-        self::assertInstanceOf(RelayModel::class, $first);
+        $first = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertSame('https://example.com/one', $first->destination);
 
         $route->destination = 'https://example.com/two';
         $route->save();
 
-        $second = Relay::request($request)->dispatchAutoRoute()->relay();
-        self::assertInstanceOf(RelayModel::class, $second);
+        $second = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertSame('https://example.com/two', $second->destination);
     }
 
@@ -137,22 +141,25 @@ class AutoRoutingTest extends TestCase
             'enabled' => false,
         ]);
 
-        $relay = Relay::request(Request::create('/orders', 'POST'))
-            ->dispatchAutoRoute()
-            ->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(
+            Relay::request(Request::create('/orders', 'POST'))
+                ->dispatchAutoRoute()
+                ->relay()
+        );
 
         $this->assertSame('failed', $relay->status);
         $this->assertSame(RelayFailure::ROUTE_DISABLED->value, $relay->failure_reason);
-        $this->assertArrayHasKey('route', $relay->meta['validation_errors']);
+        $meta = $relay->meta ?? [];
+        $this->assertArrayHasKey('route', $meta['validation_errors'] ?? []);
     }
 
     public function test_no_route_match_sets_failure_reason(): void
     {
-        $relay = Relay::request(Request::create('/missing', 'POST'))
-            ->dispatchAutoRoute()
-            ->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(
+            Relay::request(Request::create('/missing', 'POST'))
+                ->dispatchAutoRoute()
+                ->relay()
+        );
 
         $this->assertSame(RelayFailure::NO_ROUTE_MATCH->value, $relay->failure_reason);
     }
@@ -160,7 +167,7 @@ class AutoRoutingTest extends TestCase
     public function test_resolver_exceptions_map_to_failure_reason(): void
     {
         /** @var Router $router */
-        $router = $this->app->make(Router::class);
+        $router = app(Router::class);
 
         $router->registerProvider('failing', new class implements RoutingProviderInterface
         {
@@ -180,15 +187,20 @@ class AutoRoutingTest extends TestCase
             }
         });
 
-        $relay = Relay::request(Request::create('/anything', 'POST'))
-            ->dispatchAutoRoute()
-            ->relay();
-        self::assertInstanceOf(RelayModel::class, $relay);
+        $relay = $this->assertRelayInstance(
+            Relay::request(Request::create('/anything', 'POST'))
+                ->dispatchAutoRoute()
+                ->relay()
+        );
 
         $this->assertSame(RelayFailure::ROUTE_RESOLVER_ERROR->value, $relay->failure_reason);
-        $this->assertSame('Resolver boom', $relay->meta['validation_errors']['route'][0]);
+        $meta = $relay->meta ?? [];
+        $this->assertSame('Resolver boom', $meta['validation_errors']['route'][0] ?? null);
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     private function createRoute(array $attributes = []): RelayRoute
     {
         $defaults = [

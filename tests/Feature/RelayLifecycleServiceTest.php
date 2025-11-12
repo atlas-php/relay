@@ -20,7 +20,7 @@ class RelayLifecycleServiceTest extends TestCase
         $relay = Relay::payload(['foo' => 'bar'])->capture();
 
         /** @var RelayManagerInterface $manager */
-        $manager = $this->app->make(RelayManagerInterface::class);
+        $manager = app(RelayManagerInterface::class);
 
         $cancelled = $manager->cancel($relay);
         $this->assertSame('cancelled', $cancelled->status);

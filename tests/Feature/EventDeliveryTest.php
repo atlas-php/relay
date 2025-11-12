@@ -24,10 +24,10 @@ class EventDeliveryTest extends TestCase
         $result = $builder->event(fn (): string => 'ok');
 
         $this->assertSame('ok', $result);
-        $relay = $builder->relay();
+        $relay = $this->assertRelayInstance($builder->relay());
 
-        $this->assertSame('completed', $relay?->status);
-        $this->assertNull($relay?->failure_reason);
+        $this->assertSame('completed', $relay->status);
+        $this->assertNull($relay->failure_reason);
     }
 
     public function test_event_failure_sets_failure_reason(): void
@@ -40,9 +40,9 @@ class EventDeliveryTest extends TestCase
             });
             $this->fail('Expected exception was not thrown.');
         } catch (RuntimeException) {
-            $relay = $builder->relay();
-            $this->assertSame('failed', $relay?->status);
-            $this->assertSame(RelayFailure::EXCEPTION->value, $relay?->failure_reason);
+            $relay = $this->assertRelayInstance($builder->relay());
+            $this->assertSame('failed', $relay->status);
+            $this->assertSame(RelayFailure::EXCEPTION->value, $relay->failure_reason);
         }
     }
 
@@ -68,7 +68,10 @@ class EventDeliveryTest extends TestCase
             $this->assertSame($payload, $relay->payload);
         });
 
-        $this->assertInstanceOf(RelayModel::class, $relayFromCallback);
-        $this->assertSame($builder->relay()?->id, $relayFromCallback?->id);
+        if (! $relayFromCallback instanceof RelayModel) {
+            self::fail('Relay instance not captured during callback.');
+        }
+        $relay = $this->assertRelayInstance($builder->relay());
+        $this->assertSame($relay->id, $relayFromCallback->id);
     }
 }

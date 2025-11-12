@@ -42,7 +42,7 @@ class AutomationCommandsTest extends TestCase
             'retry_at' => Carbon::now()->subMinute(),
         ]);
 
-        $this->artisan('atlas-relay:retry-overdue')->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:retry-overdue')->assertExitCode(0);
 
         $relay->refresh();
         $this->assertSame('queued', $relay->status);
@@ -61,7 +61,7 @@ class AutomationCommandsTest extends TestCase
             'processing_started_at' => Carbon::now()->subMinutes(30),
         ]);
 
-        $this->artisan('atlas-relay:requeue-stuck')->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:requeue-stuck')->assertExitCode(0);
 
         $relay->refresh();
         $this->assertSame('queued', $relay->status);
@@ -80,7 +80,7 @@ class AutomationCommandsTest extends TestCase
             'processing_started_at' => Carbon::now()->subMinutes(5),
         ]);
 
-        $this->artisan('atlas-relay:enforce-timeouts')->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:enforce-timeouts')->assertExitCode(0);
 
         $relay->refresh();
         $this->assertSame('failed', $relay->status);
@@ -98,14 +98,14 @@ class AutomationCommandsTest extends TestCase
             'created_at' => Carbon::now()->subDays(61),
         ]);
 
-        $this->artisan('atlas-relay:archive --chunk=10')->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:archive', ['--chunk' => 10])->assertExitCode(0);
 
         $this->assertDatabaseMissing($relay->getTable(), ['id' => $relay->id]);
         $this->assertDatabaseHas(RelayArchive::query()->getModel()->getTable(), ['id' => $relay->id]);
 
         RelayArchive::query()->update(['archived_at' => Carbon::now()->subDays(200)]);
 
-        $this->artisan('atlas-relay:purge-archives')->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:purge-archives')->assertExitCode(0);
 
         $this->assertDatabaseMissing(RelayArchive::query()->getModel()->getTable(), ['id' => $relay->id]);
     }

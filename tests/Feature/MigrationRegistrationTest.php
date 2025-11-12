@@ -17,7 +17,7 @@ class MigrationRegistrationTest extends TestCase
 {
     public function test_package_migrations_are_loadable(): void
     {
-        $this->artisan('migrate', ['--database' => 'testbench'])->run();
+        $this->runPendingCommand('migrate', ['--database' => 'testbench'])->run();
 
         $relaysTable = config('atlas-relay.tables.relays');
         $routesTable = config('atlas-relay.tables.relay_routes');
@@ -91,7 +91,7 @@ class MigrationRegistrationTest extends TestCase
             'relay_archives' => 'custom_relay_archives',
         ]);
 
-        $this->artisan('migrate:fresh', ['--database' => 'testbench'])->run();
+        $this->runPendingCommand('migrate:fresh', ['--database' => 'testbench'])->run();
 
         $this->assertTrue(Schema::hasTable('custom_relays'));
         $this->assertTrue(Schema::hasTable('custom_relay_routes'));

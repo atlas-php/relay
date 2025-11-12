@@ -20,7 +20,11 @@ class DxCommandsTest extends TestCase
     public function test_route_seed_command_creates_routes(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'routes');
-        File::put($path, json_encode([
+        if ($path === false) {
+            self::fail('Unable to create temporary route definition file.');
+        }
+
+        $json = json_encode([
             [
                 'identifier' => 'orders',
                 'method' => 'POST',
@@ -28,10 +32,18 @@ class DxCommandsTest extends TestCase
                 'type' => 'http',
                 'destination' => 'https://example.com/orders',
             ],
-        ]));
+        ]);
 
-        $this->artisan("atlas-relay:routes:seed {$path} --replace")
-            ->assertExitCode(0);
+        if ($json === false) {
+            self::fail('Unable to encode route definitions to JSON.');
+        }
+
+        File::put($path, $json);
+
+        $this->runPendingCommand('atlas-relay:routes:seed', [
+            'file' => $path,
+            '--replace' => true,
+        ])->assertExitCode(0);
 
         $this->assertDatabaseHas((new RelayRoute)->getTable(), [
             'identifier' => 'orders',
@@ -49,7 +61,7 @@ class DxCommandsTest extends TestCase
             'mode' => 'http',
         ]);
 
-        $this->artisan("atlas-relay:relay:inspect {$relay->id}")
+        $this->runPendingCommand('atlas-relay:relay:inspect', ['id' => $relay->id])
             ->assertExitCode(0)
             ->expectsOutputToContain('"status": "queued"');
     }
@@ -65,8 +77,10 @@ class DxCommandsTest extends TestCase
             'mode' => 'http',
         ]);
 
-        $this->artisan("atlas-relay:relay:restore {$archive->id} --delete")
-            ->assertExitCode(0);
+        $this->runPendingCommand('atlas-relay:relay:restore', [
+            'id' => $archive->id,
+            '--delete' => true,
+        ])->assertExitCode(0);
 
         $this->assertDatabaseHas((new Relay)->getTable(), ['id' => $archive->id, 'status' => 'queued']);
         $this->assertDatabaseMissing((new RelayArchive)->getTable(), ['id' => $archive->id]);

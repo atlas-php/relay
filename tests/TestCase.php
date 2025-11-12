@@ -6,12 +6,16 @@ declare(strict_types=1);
  * Base TestCase bootstrapping Atlas Relay inside Orchestra Testbench so feature scenarios run against the package migrations and configuration.
  *
  * Defined by PRD: Payload Capture — Inbound Entry Point & Record Creation.
+ *
+ * @property \Illuminate\Foundation\Application $app
  */
 
 namespace AtlasRelay\Tests;
 
 use AtlasRelay\Facades\Relay;
+use AtlasRelay\Models\Relay as RelayModel;
 use AtlasRelay\Providers\AtlasRelayServiceProvider;
+use Illuminate\Testing\PendingCommand;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 abstract class TestCase extends OrchestraTestCase
@@ -20,7 +24,7 @@ abstract class TestCase extends OrchestraTestCase
     {
         parent::setUp();
 
-        $this->artisan('migrate', ['--database' => 'testbench'])->run();
+        $this->runPendingCommand('migrate', ['--database' => 'testbench'])->run();
     }
 
     protected function getPackageProviders($app): array
@@ -45,5 +49,26 @@ abstract class TestCase extends OrchestraTestCase
             'database' => ':memory:',
             'prefix' => '',
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    protected function runPendingCommand(string $command, array $parameters = []): PendingCommand
+    {
+        $pending = $this->artisan($command, $parameters);
+
+        if (! $pending instanceof PendingCommand) {
+            self::fail(sprintf('Artisan command "%s" did not return a pending command.', $command));
+        }
+
+        return $pending;
+    }
+
+    protected function assertRelayInstance(?RelayModel $relay): RelayModel
+    {
+        self::assertInstanceOf(RelayModel::class, $relay);
+
+        return $relay;
     }
 }
