@@ -272,22 +272,6 @@ Use Laravel’s standard event listeners or queued listeners to stream these met
 
 ---
 
-## ⬆️ Upgrading & Publishing
-
-1. **Publish config + migrations**  
-   `php artisan vendor:publish --tag=atlas-relay-config`  
-   `php artisan vendor:publish --tag=atlas-relay-migrations`
-2. **Run migrations**  
-   `php artisan migrate`
-3. **Register automation scheduler**  
-   Call `RelayScheduler::register($schedule)` inside your application’s `Console\Kernel`.
-4. **Review new commands/events**  
-   Subscribe to the lifecycle events above and enable the automation commands appropriate for your environment.
-
-Each release announces schema changes in `CHANGELOG.md`; run migrations whenever you update the package.
-
----
-
 ## ⚙️ Configuration
 
 | Variable                   | Description                              |
