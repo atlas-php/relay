@@ -22,7 +22,15 @@ class SeedRelayRoutesCommand extends Command
 
     public function handle(): int
     {
-        $path = $this->argument('file');
+        $pathArgument = $this->argument('file');
+
+        if (! is_string($pathArgument) || $pathArgument === '') {
+            $this->error('The --file argument must be a valid string path.');
+
+            return self::FAILURE;
+        }
+
+        $path = $pathArgument;
 
         if (! File::exists($path)) {
             $this->error("File {$path} not found.");

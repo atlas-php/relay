@@ -36,7 +36,10 @@ class RelayHttpClient
         private readonly Relay $relay
     ) {}
 
-    public function __call(string $method, array $arguments)
+    /**
+     * @param  array<int, mixed>  $arguments
+     */
+    public function __call(string $method, array $arguments): mixed
     {
         $method = strtolower($method);
 
@@ -55,6 +58,9 @@ class RelayHttpClient
         return $result;
     }
 
+    /**
+     * @param  mixed  ...$arguments
+     */
     private function send(string $method, ...$arguments): Response
     {
         $url = $arguments[0] ?? null;
@@ -143,7 +149,7 @@ class RelayHttpClient
         $originalHost = parse_url($originalUrl, PHP_URL_HOST);
         $effectiveHost = parse_url($effective, PHP_URL_HOST);
 
-        if ($effectiveHost !== null && $originalHost !== null && ! hash_equals($originalHost, $effectiveHost)) {
+        if (is_string($effectiveHost) && is_string($originalHost) && ! hash_equals($originalHost, $effectiveHost)) {
             $this->lifecycle->markFailed($relay, RelayFailure::REDIRECT_HOST_CHANGED, [], $duration);
 
             throw new RuntimeException('Redirect attempted to a different host.');
@@ -211,7 +217,7 @@ class RelayHttpClient
                 ) use ($relay, $startedAt, $originalHost) {
                     $targetHost = $uri->getHost();
 
-                    if ($originalHost === null || $targetHost === null) {
+                    if (! is_string($originalHost) || $originalHost === '' || $targetHost === '') {
                         return;
                     }
 

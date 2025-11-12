@@ -10,7 +10,7 @@ use AtlasRelay\Models\Relay;
 use AtlasRelay\Support\RelayHttpClient;
 use AtlasRelay\Support\RelayJobContext;
 use AtlasRelay\Support\RelayJobMiddleware;
-use Illuminate\Bus\PendingChain;
+use Illuminate\Foundation\Bus\PendingChain;
 use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -95,6 +95,9 @@ class RelayDeliveryService
         }
     }
 
+    /**
+     * @param  array<int, mixed>  $jobs
+     */
     public function dispatchChain(Relay $relay, array $jobs): PendingChain
     {
         foreach ($jobs as $job) {
@@ -106,19 +109,30 @@ class RelayDeliveryService
 
     private function applyJobMiddleware(mixed $job, Relay $relay): void
     {
+        if (! is_object($job)) {
+            return;
+        }
+
         if (method_exists($job, 'through')) {
             $job->through([new RelayJobMiddleware($relay->id)]);
 
             return;
         }
 
-        if (method_exists($job, 'middleware')) {
-            $middleware = $job->middleware();
-            $middleware[] = new RelayJobMiddleware($relay->id);
+        if (! method_exists($job, 'middleware')) {
+            return;
+        }
 
-            if (property_exists($job, 'middleware')) {
-                $job->middleware = $middleware;
-            }
+        $middleware = $job->middleware();
+
+        if (! is_array($middleware)) {
+            $middleware = is_iterable($middleware) ? iterator_to_array($middleware) : [];
+        }
+
+        $middleware[] = new RelayJobMiddleware($relay->id);
+
+        if (property_exists($job, 'middleware')) {
+            $job->middleware = $middleware;
         }
     }
 

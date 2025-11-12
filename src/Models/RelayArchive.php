@@ -52,6 +52,10 @@ class RelayArchive extends AtlasModel
 
     protected $keyType = 'int';
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeEligibleForPurge(Builder $query, int $retentionDays): Builder
     {
         return $query

@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Configured route definitions used for AutoRouting decisions defined in the Routing PRD.
+ *
+ * @property positive-int $id
+ * @property string|null $identifier
+ * @property string $method
+ * @property string $path
+ * @property string $type
+ * @property string $destination
+ * @property array<string, mixed>|null $headers
+ * @property bool $enabled
  */
 class RelayRoute extends AtlasModel
 {
@@ -29,6 +38,10 @@ class RelayRoute extends AtlasModel
         'updated_at' => 'immutable_datetime',
     ];
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeEnabled(Builder $query): Builder
     {
         return $query->where('enabled', true);

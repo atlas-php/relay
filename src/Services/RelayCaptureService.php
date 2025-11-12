@@ -86,6 +86,9 @@ class RelayCaptureService
         return null;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function normalizeHeaders(?Request $request): array
     {
         if ($request === null) {
@@ -117,6 +120,9 @@ class RelayCaptureService
         return $normalized;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function defaultLifecycleConfig(): array
     {
         return [
@@ -197,6 +203,13 @@ class RelayCaptureService
         return $values !== null ? (string) $values : null;
     }
 
+    /**
+     * @param  array<string, mixed>  $meta
+     * @param  array<string, array<int, string>>  $validationErrors
+     * @param  array<string, string>  $routeHeaders
+     * @param  array<string, string>  $routeParameters
+     * @return array<string, mixed>
+     */
     private function buildMeta(array $meta, array $validationErrors, array $routeHeaders, array $routeParameters): array
     {
         if (! empty($validationErrors)) {
@@ -214,6 +227,10 @@ class RelayCaptureService
         return $meta;
     }
 
+    /**
+     * @param  array<string, array<int, string>>  $errors
+     * @return array<string, array<int, string>>
+     */
     private function appendValidationError(array $errors, string $field, string $message): array
     {
         $errors[$field][] = $message;

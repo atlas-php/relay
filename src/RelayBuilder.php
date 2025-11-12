@@ -14,7 +14,8 @@ use AtlasRelay\Services\RelayCaptureService;
 use AtlasRelay\Services\RelayDeliveryService;
 use AtlasRelay\Support\RelayContext;
 use AtlasRelay\Support\RelayHttpClient;
-use Illuminate\Bus\PendingChain;
+use Illuminate\Foundation\Bus\PendingChain;
+use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Http\Request;
 
 /**
@@ -134,6 +135,9 @@ class RelayBuilder
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     public function meta(array $meta): self
     {
         $this->meta = $meta;
@@ -141,6 +145,9 @@ class RelayBuilder
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     public function mergeMeta(array $meta): self
     {
         $this->meta = array_replace_recursive($this->meta, $meta);
@@ -243,7 +250,7 @@ class RelayBuilder
         return $this->deliveryService->http($relay);
     }
 
-    public function dispatch(mixed $job)
+    public function dispatch(mixed $job): PendingDispatch
     {
         $this->mode ??= 'dispatch';
         $relay = $this->ensureRelayCaptured();
@@ -259,6 +266,9 @@ class RelayBuilder
         return $this->deliveryService->dispatchSync($relay, $job);
     }
 
+    /**
+     * @param  array<int, mixed>  $jobs
+     */
     public function dispatchChain(array $jobs): PendingChain
     {
         $this->mode ??= 'dispatch_chain';

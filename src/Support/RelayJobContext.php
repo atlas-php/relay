@@ -15,16 +15,16 @@ class RelayJobContext
 
     public static function set(Relay $relay): void
     {
-        static::$current = $relay;
+        self::$current = $relay;
     }
 
     public static function current(): ?Relay
     {
-        return static::$current;
+        return self::$current;
     }
 
     public static function clear(): void
     {
-        static::$current = null;
+        self::$current = null;
     }
 }

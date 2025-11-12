@@ -32,7 +32,15 @@ class InspectRelayCommand extends Command
             return self::FAILURE;
         }
 
-        $this->line(json_encode($relay->toArray(), JSON_PRETTY_PRINT));
+        $payload = json_encode($relay->toArray(), JSON_PRETTY_PRINT);
+
+        if ($payload === false) {
+            $this->error("Relay {$id} could not be encoded to JSON.");
+
+            return self::FAILURE;
+        }
+
+        $this->line($payload);
 
         return self::SUCCESS;
     }

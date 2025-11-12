@@ -13,6 +13,9 @@ abstract class AtlasModel extends Model
 {
     protected $guarded = [];
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function __construct(array $attributes = [])
     {
         $this->setTable(config($this->tableNameConfigKey(), $this->defaultTableName()));

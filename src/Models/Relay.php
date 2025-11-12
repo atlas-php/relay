@@ -8,6 +8,43 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Represents the authoritative live relay record specified in the Payload Capture, Routing, and Outbound Delivery PRDs.
+ *
+ * @property positive-int $id
+ * @property string|null $request_source
+ * @property array<string, mixed>|null $headers
+ * @property array<mixed>|null $payload
+ * @property string $status
+ * @property string|null $mode
+ * @property int|null $route_id
+ * @property string|null $route_identifier
+ * @property string|null $destination_type
+ * @property string|null $destination
+ * @property int|null $response_status
+ * @property array<mixed>|null $response_payload
+ * @property bool $response_payload_truncated
+ * @property int|null $failure_reason
+ * @property bool $is_retry
+ * @property int|null $retry_seconds
+ * @property int|null $retry_max_attempts
+ * @property int $attempt_count
+ * @property int|null $max_attempts
+ * @property bool $is_delay
+ * @property int|null $delay_seconds
+ * @property int|null $timeout_seconds
+ * @property int|null $http_timeout_seconds
+ * @property int|null $last_attempt_duration_ms
+ * @property \Carbon\CarbonImmutable|null $retry_at
+ * @property \Carbon\CarbonImmutable|null $first_attempted_at
+ * @property \Carbon\CarbonImmutable|null $last_attempted_at
+ * @property \Carbon\CarbonImmutable|null $processing_started_at
+ * @property \Carbon\CarbonImmutable|null $processing_finished_at
+ * @property \Carbon\CarbonImmutable|null $completed_at
+ * @property \Carbon\CarbonImmutable|null $failed_at
+ * @property \Carbon\CarbonImmutable|null $cancelled_at
+ * @property \Carbon\CarbonImmutable|null $archived_at
+ * @property array<mixed>|null $meta
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
  */
 class Relay extends AtlasModel
 {
@@ -46,6 +83,10 @@ class Relay extends AtlasModel
         'updated_at' => 'immutable_datetime',
     ];
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeDueForRetry(Builder $query): Builder
     {
         return $query
@@ -55,6 +96,10 @@ class Relay extends AtlasModel
             ->where('retry_at', '<=', now());
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeUnarchived(Builder $query): Builder
     {
         return $query->whereNull('archived_at');

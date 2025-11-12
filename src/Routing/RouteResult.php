@@ -26,6 +26,9 @@ class RouteResult
         public readonly array $parameters = []
     ) {}
 
+    /**
+     * @param  array<string, string>  $parameters
+     */
     public static function fromModel(RelayRoute $route, array $parameters = []): self
     {
         return new self(

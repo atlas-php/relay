@@ -34,6 +34,9 @@ class RelayLifecycleService
         return $relay;
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function markCompleted(Relay $relay, array $attributes = [], ?int $durationMs = null): Relay
     {
         $now = $this->now();
@@ -51,6 +54,9 @@ class RelayLifecycleService
         return $relay;
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function markFailed(
         Relay $relay,
         RelayFailure $failure,

@@ -164,6 +164,9 @@ class Router
         return $result;
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     private function matchDynamicPath(string $routePath, string $incomingPath): ?array
     {
         $segments = preg_split('/(\{[^\}]+\})/', $routePath, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
