@@ -129,10 +129,11 @@ Before committing any change:
 
 1. Run Pint for formatting: `./vendor/bin/pint`
 2. Run tests: `composer test`
-3. Verify autoload & discovery: `composer dump-autoload`
-4. Confirm PRD alignment for naming and functionality.
-5. Ensure no temporary debugging or unused imports remain.
-6. Verify that every class includes a valid doc block with purpose and PRD reference.
+3. Run static analysis: `composer analyse`
+4. Verify autoload & discovery: `composer dump-autoload`
+5. Confirm PRD alignment for naming and functionality.
+6. Ensure no temporary debugging or unused imports remain.
+7. Verify that every class includes a valid doc block with purpose and PRD reference.
 
 ---
 

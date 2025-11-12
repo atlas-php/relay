@@ -345,6 +345,11 @@ Run tests for the package (no Laravel app context required):
 composer test
 ```
 
+Run static analysis to catch type regressions early:
+```bash
+composer analyse
+```
+
 ---
 
 ## 👥 Contributors
