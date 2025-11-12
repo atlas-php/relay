@@ -2,14 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * Base TestCase bootstrapping Atlas Relay inside Orchestra Testbench so feature scenarios run against the package migrations and configuration.
- *
- * Defined by PRD: Payload Capture — Inbound Entry Point & Record Creation.
- *
- * @property \Illuminate\Foundation\Application $app
- */
-
 namespace AtlasRelay\Tests;
 
 use AtlasRelay\Facades\Relay;
@@ -18,6 +10,13 @@ use AtlasRelay\Providers\AtlasRelayServiceProvider;
 use Illuminate\Testing\PendingCommand;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
+/**
+ * Base TestCase bootstrapping Atlas Relay inside Orchestra Testbench so feature scenarios run against the package migrations and configuration.
+ *
+ * Defined by PRD: Payload Capture — Inbound Entry Point & Record Creation.
+ *
+ * @property \Illuminate\Foundation\Application $app
+ */
 abstract class TestCase extends OrchestraTestCase
 {
     protected function setUp(): void

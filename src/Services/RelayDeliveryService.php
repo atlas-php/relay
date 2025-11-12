@@ -59,10 +59,9 @@ class RelayDeliveryService
     public function dispatchEventAsync(Relay $relay, callable $callback): PendingDispatch
     {
         $job = new DispatchRelayEventJob(Closure::fromCallable($callback));
+        $job->through([new RelayJobMiddleware($relay->id)]);
 
-        $pending = dispatch($job);
-
-        return $pending->through(new RelayJobMiddleware($relay->id));
+        return dispatch($job);
     }
 
     public function http(Relay $relay): RelayHttpClient
@@ -81,9 +80,7 @@ class RelayDeliveryService
     {
         $this->applyJobMiddleware($job, $relay);
 
-        $pending = dispatch($job);
-
-        return $pending->through(new RelayJobMiddleware($relay->id));
+        return dispatch($job);
     }
 
     public function dispatchSync(Relay $relay, mixed $job): mixed

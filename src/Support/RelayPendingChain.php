@@ -14,6 +14,9 @@ use Illuminate\Foundation\Bus\PendingDispatch;
  */
 class RelayPendingChain extends PendingChain
 {
+    /**
+     * @param  array<int, mixed>  $chain
+     */
     public function __construct(
         private readonly int $relayId,
         mixed $job,
@@ -24,28 +27,51 @@ class RelayPendingChain extends PendingChain
 
     public function dispatch(): PendingDispatch
     {
-        return parent::dispatch()->through(new RelayJobMiddleware($this->relayId));
+        $this->applyRelayMiddleware($this->job);
+
+        return parent::dispatch(...func_get_args());
     }
 
     public function dispatchIf($boolean): ?PendingDispatch
     {
-        $result = parent::dispatchIf($boolean);
+        $this->applyRelayMiddleware($this->job);
 
-        if ($result instanceof PendingDispatch) {
-            return $result->through(new RelayJobMiddleware($this->relayId));
-        }
-
-        return $result;
+        return parent::dispatchIf($boolean);
     }
 
     public function dispatchUnless($boolean): ?PendingDispatch
     {
-        $result = parent::dispatchUnless($boolean);
+        $this->applyRelayMiddleware($this->job);
 
-        if ($result instanceof PendingDispatch) {
-            return $result->through(new RelayJobMiddleware($this->relayId));
+        return parent::dispatchUnless($boolean);
+    }
+
+    private function applyRelayMiddleware(mixed $job): void
+    {
+        if (! is_object($job)) {
+            return;
         }
 
-        return $result;
+        if (method_exists($job, 'through')) {
+            $job->through([new RelayJobMiddleware($this->relayId)]);
+
+            return;
+        }
+
+        if (! method_exists($job, 'middleware')) {
+            return;
+        }
+
+        $middleware = $job->middleware();
+
+        if (! is_array($middleware)) {
+            $middleware = is_iterable($middleware) ? iterator_to_array($middleware) : [];
+        }
+
+        $middleware[] = new RelayJobMiddleware($this->relayId);
+
+        if (property_exists($job, 'middleware')) {
+            $job->middleware = $middleware;
+        }
     }
 }

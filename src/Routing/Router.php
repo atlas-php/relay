@@ -98,7 +98,7 @@ class Router
     {
         $routes = $this->rememberRoutesForMethod($method, $enabledOnly);
 
-        foreach ($routes['dynamic'] ?? [] as $route) {
+        foreach ($routes['dynamic'] as $route) {
             $parameters = $this->matchDynamicPath($route['path'], $path);
 
             if ($parameters === null) {
@@ -110,10 +110,8 @@ class Router
             ]));
         }
 
-        $staticRoutes = $routes['static'] ?? [];
-
-        if (isset($staticRoutes[$path])) {
-            return RouteResult::fromArray($staticRoutes[$path]);
+        if (isset($routes['static'][$path])) {
+            return RouteResult::fromArray($routes['static'][$path]);
         }
 
         return null;

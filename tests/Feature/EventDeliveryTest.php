@@ -106,9 +106,10 @@ class EventDeliveryTest extends TestCase
         $this->assertNotNull($capturedJob);
 
         $middleware = new RelayJobMiddleware($relay->id);
-        $service = $this->app->make(RelayDeliveryService::class);
+        /** @var RelayDeliveryService $service */
+        $service = app(RelayDeliveryService::class);
 
-        $middleware->handle($capturedJob, function (object $job) use ($service): void {
+        $middleware->handle($capturedJob, function (DispatchRelayEventJob $job) use ($service): void {
             $job->handle($service);
         });
 
@@ -142,10 +143,11 @@ class EventDeliveryTest extends TestCase
         $this->assertNotNull($capturedJob);
 
         $middleware = new RelayJobMiddleware($relay->id);
-        $service = $this->app->make(RelayDeliveryService::class);
+        /** @var RelayDeliveryService $service */
+        $service = app(RelayDeliveryService::class);
 
         try {
-            $middleware->handle($capturedJob, function (object $job) use ($service): void {
+            $middleware->handle($capturedJob, function (DispatchRelayEventJob $job) use ($service): void {
                 $job->handle($service);
             });
             $this->fail('Expected RelayJobFailedException to be thrown.');

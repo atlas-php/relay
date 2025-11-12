@@ -152,15 +152,15 @@ class HttpDeliveryTest extends TestCase
         $method = new ReflectionMethod($client, 'evaluateRedirects');
         $method->setAccessible(true);
 
+        $this->expectException(RelayHttpException::class);
+        $this->expectExceptionMessage('Redirect limit exceeded for relay HTTP delivery.');
+
         try {
             $method->invoke($client, 'https://example.com/start', $response, $relay, 25);
-            $this->fail('RelayHttpException should have been thrown.');
-        } catch (RelayHttpException $exception) {
-            $this->assertSame('Redirect limit exceeded for relay HTTP delivery.', $exception->getMessage());
+        } finally {
+            $relay = $this->assertRelayInstance($builder->relay());
+            $this->assertSame('failed', $relay->status);
+            $this->assertSame(RelayFailure::TOO_MANY_REDIRECTS->value, $relay->failure_reason);
         }
-
-        $relay = $this->assertRelayInstance($builder->relay());
-        $this->assertSame('failed', $relay->status);
-        $this->assertSame(RelayFailure::TOO_MANY_REDIRECTS->value, $relay->failure_reason);
     }
 }
