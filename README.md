@@ -1,12 +1,6 @@
-# Atlas Relay for Laravel
+# Atlas Relay
 
-> A unified Laravel relay system for **sending and receiving webhooks** — built for **reliability**, **observability**, and **control**. Capture, process, and relay any payload with full lifecycle visibility.
-
----
-
-## 🌍 Overview
-
-**Atlas Relay** is a Laravel package that provides a **complete relay system** for managing both **inbound and outbound webhooks**.
+**Atlas Relay** is a Laravel package that provides a **complete relay system** for managing **inbound and outbound webhooks**, events, and payloads.
 
 It unifies webhook reception, processing, routing, and delivery into one lifecycle — ensuring every payload is captured, tracked, and delivered with full transparency.
 
