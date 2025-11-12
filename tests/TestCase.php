@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests;
+namespace Atlas\Relay\Tests;
 
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Models\Relay as RelayModel;
-use AtlasRelay\Providers\AtlasRelayServiceProvider;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Models\Relay as RelayModel;
+use Atlas\Relay\Providers\AtlasRelayServiceProvider;
 use Illuminate\Testing\PendingCommand;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 

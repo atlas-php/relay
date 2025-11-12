@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Console\Commands;
+namespace Atlas\Relay\Console\Commands;
 
-use AtlasRelay\Models\RelayRoute;
+use Atlas\Relay\Models\RelayRoute;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 

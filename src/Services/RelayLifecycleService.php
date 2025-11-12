@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Services;
+namespace Atlas\Relay\Services;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Events\RelayAttemptStarted;
-use AtlasRelay\Events\RelayCompleted;
-use AtlasRelay\Events\RelayFailed;
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Events\RelayAttemptStarted;
+use Atlas\Relay\Events\RelayCompleted;
+use Atlas\Relay\Events\RelayFailed;
+use Atlas\Relay\Models\Relay;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Throwable;

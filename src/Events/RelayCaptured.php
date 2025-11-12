@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Events;
+namespace Atlas\Relay\Events;
 
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Models\Relay;
 
 /**
  * Fired immediately after a relay record is created.

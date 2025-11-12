@@ -30,7 +30,7 @@ Atlas Relay ensures:
 Install the package via Composer:
 
 ```bash
-composer require atlasvue/atlas-relay
+composer require atlas-php/relay
 ```
 
 After installation, publish the configuration and migrations:
@@ -44,7 +44,7 @@ php artisan migrate
 Finally, register the automation scheduler inside your `Console\Kernel`:
 
 ```php
-use AtlasRelay\Support\RelayScheduler;
+use Atlas\Relay\Support\RelayScheduler;
 
 protected function schedule(Schedule $schedule): void
 {
@@ -227,7 +227,7 @@ Archiving runs nightly at **10 PM EST**, and purging at **11 PM EST**.
 Register the automation cadence inside your `Console\Kernel`:
 
 ```php
-use AtlasRelay\Support\RelayScheduler;
+use Atlas\Relay\Support\RelayScheduler;
 
 protected function schedule(Schedule $schedule): void
 {

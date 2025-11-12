@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Routing;
+namespace Atlas\Relay\Routing;
 
 /**
  * Defines the contract for programmatic route providers with optional caching controls.

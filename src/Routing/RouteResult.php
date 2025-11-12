@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Routing;
+namespace Atlas\Relay\Routing;
 
-use AtlasRelay\Models\RelayRoute;
+use Atlas\Relay\Models\RelayRoute;
 
 /**
  * Value object describing a resolved route and its delivery defaults.

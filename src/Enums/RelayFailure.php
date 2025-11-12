@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Enums;
+namespace Atlas\Relay\Enums;
 
 /**
  * Centralized relay failure codes defined across the Payload Capture and Outbound Delivery PRDs.

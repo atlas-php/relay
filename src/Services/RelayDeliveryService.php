@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Services;
+namespace Atlas\Relay\Services;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Exceptions\RelayJobFailedException;
-use AtlasRelay\Jobs\DispatchRelayEventJob;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Support\RelayHttpClient;
-use AtlasRelay\Support\RelayJobContext;
-use AtlasRelay\Support\RelayJobMiddleware;
-use AtlasRelay\Support\RelayPendingChain;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Exceptions\RelayJobFailedException;
+use Atlas\Relay\Jobs\DispatchRelayEventJob;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Support\RelayHttpClient;
+use Atlas\Relay\Support\RelayJobContext;
+use Atlas\Relay\Support\RelayJobMiddleware;
+use Atlas\Relay\Support\RelayPendingChain;
 use Closure;
 use Illuminate\Bus\ChainedBatch;
 use Illuminate\Contracts\Support\Arrayable;

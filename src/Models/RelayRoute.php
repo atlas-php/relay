@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Models;
+namespace Atlas\Relay\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Routing;
+namespace Atlas\Relay\Routing;
 
 use Illuminate\Http\Request;
 

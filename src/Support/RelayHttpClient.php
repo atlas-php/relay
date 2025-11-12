@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Support;
+namespace Atlas\Relay\Support;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Exceptions\RelayHttpException;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Services\RelayLifecycleService;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Exceptions\RelayHttpException;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Services\RelayLifecycleService;
 use GuzzleHttp\Exception\TooManyRedirectsException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;

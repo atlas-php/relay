@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Exceptions\RelayHttpException;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Exceptions\RelayHttpException;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Tests\TestCase;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Psr7\Request as PsrRequest;
 use GuzzleHttp\Psr7\Response as PsrResponse;

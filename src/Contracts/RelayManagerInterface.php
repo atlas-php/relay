@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Contracts;
+namespace Atlas\Relay\Contracts;
 
-use AtlasRelay\Models\Relay;
-use AtlasRelay\RelayBuilder;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\RelayBuilder;
 use Illuminate\Http\Request;
 
 /**

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Support;
+namespace Atlas\Relay\Support;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Exceptions\RelayJobFailedException;
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Exceptions\RelayJobFailedException;
+use Atlas\Relay\Models\Relay;
 
 /**
  * Helper available inside jobs via the container for interacting with the active relay context.

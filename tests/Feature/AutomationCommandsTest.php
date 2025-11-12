@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Models\RelayArchive;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Models\RelayArchive;
+use Atlas\Relay\Tests\TestCase;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 
 /**

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Exceptions\RelayJobFailedException;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Support\RelayJobHelper;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Exceptions\RelayJobFailedException;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Support\RelayJobHelper;
+use Atlas\Relay\Tests\TestCase;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

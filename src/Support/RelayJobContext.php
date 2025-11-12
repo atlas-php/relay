@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Support;
+namespace Atlas\Relay\Support;
 
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Models\Relay;
 
 /**
  * Stores per-job relay context so jobs can introspect or signal failures.

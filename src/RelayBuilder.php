@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay;
+namespace Atlas\Relay;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Routing\RouteContext as RoutingContext;
-use AtlasRelay\Routing\Router;
-use AtlasRelay\Routing\RouteResult;
-use AtlasRelay\Routing\RoutingException;
-use AtlasRelay\Services\RelayCaptureService;
-use AtlasRelay\Services\RelayDeliveryService;
-use AtlasRelay\Support\RelayContext;
-use AtlasRelay\Support\RelayHttpClient;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Routing\RouteContext as RoutingContext;
+use Atlas\Relay\Routing\Router;
+use Atlas\Relay\Routing\RouteResult;
+use Atlas\Relay\Routing\RoutingException;
+use Atlas\Relay\Services\RelayCaptureService;
+use Atlas\Relay\Services\RelayDeliveryService;
+use Atlas\Relay\Support\RelayContext;
+use Atlas\Relay\Support\RelayHttpClient;
 use Illuminate\Foundation\Bus\PendingChain;
 use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Http\Request;

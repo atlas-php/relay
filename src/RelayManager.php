@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay;
+namespace Atlas\Relay;
 
-use AtlasRelay\Contracts\RelayManagerInterface;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Routing\Router;
-use AtlasRelay\Services\RelayCaptureService;
-use AtlasRelay\Services\RelayDeliveryService;
-use AtlasRelay\Services\RelayLifecycleService;
+use Atlas\Relay\Contracts\RelayManagerInterface;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Routing\Router;
+use Atlas\Relay\Services\RelayCaptureService;
+use Atlas\Relay\Services\RelayDeliveryService;
+use Atlas\Relay\Services\RelayLifecycleService;
 use Illuminate\Http\Request;
 
 /**

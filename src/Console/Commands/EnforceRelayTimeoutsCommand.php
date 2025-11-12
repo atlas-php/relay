@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Console\Commands;
+namespace Atlas\Relay\Console\Commands;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Events\AutomationMetrics;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Services\RelayLifecycleService;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Events\AutomationMetrics;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Services\RelayLifecycleService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

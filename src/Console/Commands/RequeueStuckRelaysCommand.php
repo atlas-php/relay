@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Console\Commands;
+namespace Atlas\Relay\Console\Commands;
 
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Events\AutomationMetrics;
-use AtlasRelay\Events\RelayRequeued;
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Events\AutomationMetrics;
+use Atlas\Relay\Events\RelayRequeued;
+use Atlas\Relay\Models\Relay;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;

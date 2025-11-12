@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Services;
+namespace Atlas\Relay\Services;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Events\RelayCaptured;
-use AtlasRelay\Exceptions\InvalidDestinationUrlException;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Support\RelayContext;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Events\RelayCaptured;
+use Atlas\Relay\Exceptions\InvalidDestinationUrlException;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Support\RelayContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Models\Relay as RelayModel;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Models\Relay as RelayModel;
+use Atlas\Relay\Tests\TestCase;
 use Illuminate\Http\Request;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Events;
+namespace Atlas\Relay\Events;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Models\Relay;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Models\Relay;
 
 /**
  * Fired when a relay attempt fails.

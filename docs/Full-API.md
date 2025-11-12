@@ -8,14 +8,14 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 
 | Accessor | Resolves To | Notes |
 | --- | --- | --- |
-| `AtlasRelay\Providers\AtlasRelayServiceProvider` | Auto-discovered package provider | Registers config, migrations, commands, and singletons. |
-| `AtlasRelay\Facades\Relay` facade | `atlas-relay.manager` binding | Fluent API entrypoint; import via `use AtlasRelay\Facades\Relay;`. |
-| `AtlasRelay\Contracts\RelayManagerInterface` / `app('atlas-relay.manager')` | `AtlasRelay\RelayManager` | Provides `request()`, `payload()`, `cancel()`, `replay()` builder entrypoints. |
-| `AtlasRelay\Routing\Router` / `app('atlas-relay.router')` | Router singleton | Supports database routes and custom providers. |
-| `AtlasRelay\Services\RelayCaptureService` | Capture service singleton | Persistent relay storage according to Payload Capture PRD. |
-| `AtlasRelay\Services\RelayLifecycleService` | Lifecycle service singleton | Cancelling/replaying/marking relays; used by delivery helpers. |
-| `AtlasRelay\Services\RelayDeliveryService` | Delivery orchestrator singleton | HTTP/event/job execution wrappers. |
-| `AtlasRelay\Support\RelayJobHelper` | Helper singleton | Injectable into jobs for accessing relay context and raising failures. |
+| `Atlas\Relay\Providers\AtlasRelayServiceProvider` | Auto-discovered package provider | Registers config, migrations, commands, and singletons. |
+| `Atlas\Relay\Facades\Relay` facade | `atlas-relay.manager` binding | Fluent API entrypoint; import via `use Atlas\Relay\Facades\Relay;`. |
+| `Atlas\Relay\Contracts\RelayManagerInterface` / `app('atlas-relay.manager')` | `Atlas\Relay\RelayManager` | Provides `request()`, `payload()`, `cancel()`, `replay()` builder entrypoints. |
+| `Atlas\Relay\Routing\Router` / `app('atlas-relay.router')` | Router singleton | Supports database routes and custom providers. |
+| `Atlas\Relay\Services\RelayCaptureService` | Capture service singleton | Persistent relay storage according to Payload Capture PRD. |
+| `Atlas\Relay\Services\RelayLifecycleService` | Lifecycle service singleton | Cancelling/replaying/marking relays; used by delivery helpers. |
+| `Atlas\Relay\Services\RelayDeliveryService` | Delivery orchestrator singleton | HTTP/event/job execution wrappers. |
+| `Atlas\Relay\Support\RelayJobHelper` | Helper singleton | Injectable into jobs for accessing relay context and raising failures. |
 
 ---
 
@@ -135,9 +135,9 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 
 | Model | Purpose | Helpers |
 | --- | --- | --- |
-| `AtlasRelay\Models\Relay` | Live relay records capturing lifecycle + payload metadata. | `scopeDueForRetry()` (ready retries), `scopeUnarchived()`. Table name configurable via `atlas-relay.tables.relays`. |
-| `AtlasRelay\Models\RelayRoute` | Persisted routing definitions used by AutoRoute modes. | `scopeEnabled()`. Table configurable via `atlas-relay.tables.relay_routes`. |
-| `AtlasRelay\Models\RelayArchive` | Long-term storage for completed/failed relays. | `scopeEligibleForPurge(int $retentionDays)`. Table configurable via `atlas-relay.tables.relay_archives`. |
+| `Atlas\Relay\Models\Relay` | Live relay records capturing lifecycle + payload metadata. | `scopeDueForRetry()` (ready retries), `scopeUnarchived()`. Table name configurable via `atlas-relay.tables.relays`. |
+| `Atlas\Relay\Models\RelayRoute` | Persisted routing definitions used by AutoRoute modes. | `scopeEnabled()`. Table configurable via `atlas-relay.tables.relay_routes`. |
+| `Atlas\Relay\Models\RelayArchive` | Long-term storage for completed/failed relays. | `scopeEligibleForPurge(int $retentionDays)`. Table configurable via `atlas-relay.tables.relay_archives`. |
 
 All models inherit from `AtlasModel`, which reads the target table names from config at construction time.
 
@@ -196,9 +196,9 @@ Tie these commands into Laravel’s scheduler via `RelayScheduler::register($sch
 
 | Component | Details |
 | --- | --- |
-| `AtlasRelay\Enums\RelayFailure` | Canonical failure codes (`PAYLOAD_TOO_LARGE`, `NO_ROUTE_MATCH`, etc.) with helper `label()`/`description()`. Use them when forcing failures or handling lifecycle callbacks. |
-| `AtlasRelay\Exceptions\RelayHttpException` | Thrown for HTTPS enforcement, redirect violations, or other outbound HTTP guard rails. Call `failure()` to obtain the associated `RelayFailure`. |
-| `AtlasRelay\Exceptions\RelayJobFailedException` | Throw (or use `RelayJobHelper::fail()`) inside jobs to mark a relay as failed with custom attributes. |
+| `Atlas\Relay\Enums\RelayFailure` | Canonical failure codes (`PAYLOAD_TOO_LARGE`, `NO_ROUTE_MATCH`, etc.) with helper `label()`/`description()`. Use them when forcing failures or handling lifecycle callbacks. |
+| `Atlas\Relay\Exceptions\RelayHttpException` | Thrown for HTTPS enforcement, redirect violations, or other outbound HTTP guard rails. Call `failure()` to obtain the associated `RelayFailure`. |
+| `Atlas\Relay\Exceptions\RelayJobFailedException` | Throw (or use `RelayJobHelper::fail()`) inside jobs to mark a relay as failed with custom attributes. |
 
 ---
 
@@ -206,7 +206,7 @@ Tie these commands into Laravel’s scheduler via `RelayScheduler::register($sch
 
 | Job | Purpose |
 | --- | --- |
-| `AtlasRelay\Jobs\DispatchRelayEventJob` | Queued wrapper that calls `RelayDeliveryService::runQueuedEventCallback()` with the serialized closure provided by `RelayBuilder::dispatchEvent()`. Middleware automatically maintains lifecycle state. |
+| `Atlas\Relay\Jobs\DispatchRelayEventJob` | Queued wrapper that calls `RelayDeliveryService::runQueuedEventCallback()` with the serialized closure provided by `RelayBuilder::dispatchEvent()`. Middleware automatically maintains lifecycle state. |
 
 ---
 
@@ -214,7 +214,7 @@ Tie these commands into Laravel’s scheduler via `RelayScheduler::register($sch
 
 | Component | Usage |
 | --- | --- |
-| `AtlasRelay\Support\RelayContext` | Immutable value object passed into `RelayCaptureService::capture()`; useful when asserting builder state in tests. |
-| `AtlasRelay\Support\RelayJobContext` | Static per-job relay store; call `RelayJobContext::current()` from anywhere in the job stack. |
+| `Atlas\Relay\Support\RelayContext` | Immutable value object passed into `RelayCaptureService::capture()`; useful when asserting builder state in tests. |
+| `Atlas\Relay\Support\RelayJobContext` | Static per-job relay store; call `RelayJobContext::current()` from anywhere in the job stack. |
 
 Use these helpers when extending Atlas Relay, writing package tests, or integrating with your own automation around the relay lifecycle.

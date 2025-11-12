@@ -19,7 +19,7 @@ See also (technical foundations): `PRD-Payload-Capture.md`, `PRD-Routing.md`, `P
 ## 1) Dispatch a Job via Atlas (and chain Laravel controls)
 
 ```php
-use AtlasRelay\Facades\Relay;
+use Atlas\Relay\Facades\Relay;
 
 $pending = Relay::payload($payload)
     ->dispatch(new ExampleJob($payload));   // <-- thin wrapper over Laravel dispatch

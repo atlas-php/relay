@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Support;
+namespace Atlas\Relay\Support;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Exceptions\RelayJobFailedException;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Services\RelayLifecycleService;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Exceptions\RelayJobFailedException;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Services\RelayLifecycleService;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 

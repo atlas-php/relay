@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Support;
+namespace Atlas\Relay\Support;
 
 use Illuminate\Console\Scheduling\Schedule;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Jobs;
+namespace Atlas\Relay\Jobs;
 
-use AtlasRelay\Services\RelayDeliveryService;
+use Atlas\Relay\Services\RelayDeliveryService;
 use Closure;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

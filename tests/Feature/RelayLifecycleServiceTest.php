@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Contracts\RelayManagerInterface;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Contracts\RelayManagerInterface;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Tests\TestCase;
 
 /**
  * Ensures the lifecycle service can cancel relays and replay them back into the queue while clearing failure state.

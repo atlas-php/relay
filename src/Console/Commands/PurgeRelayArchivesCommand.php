@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Console\Commands;
+namespace Atlas\Relay\Console\Commands;
 
-use AtlasRelay\Events\AutomationMetrics;
-use AtlasRelay\Models\RelayArchive;
+use Atlas\Relay\Events\AutomationMetrics;
+use Atlas\Relay\Models\RelayArchive;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

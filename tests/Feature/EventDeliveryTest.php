@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Exceptions\RelayJobFailedException;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Jobs\DispatchRelayEventJob;
-use AtlasRelay\Models\Relay as RelayModel;
-use AtlasRelay\Services\RelayDeliveryService;
-use AtlasRelay\Support\RelayJobMiddleware;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Exceptions\RelayJobFailedException;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Jobs\DispatchRelayEventJob;
+use Atlas\Relay\Models\Relay as RelayModel;
+use Atlas\Relay\Services\RelayDeliveryService;
+use Atlas\Relay\Support\RelayJobMiddleware;
+use Atlas\Relay\Tests\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RuntimeException;
 

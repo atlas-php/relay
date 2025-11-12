@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Console\Commands;
+namespace Atlas\Relay\Console\Commands;
 
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Events\RelayRestored;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Models\RelayArchive;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Events\RelayRestored;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Models\RelayArchive;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

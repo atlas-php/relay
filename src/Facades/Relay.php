@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Facades;
+namespace Atlas\Relay\Facades;
 
-use AtlasRelay\RelayBuilder;
+use Atlas\Relay\RelayBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
 
@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static RelayBuilder request(Request $request)
  * @method static RelayBuilder payload(mixed $payload)
- * @method static \AtlasRelay\Models\Relay cancel(\AtlasRelay\Models\Relay $relay)
- * @method static \AtlasRelay\Models\Relay replay(\AtlasRelay\Models\Relay $relay)
+ * @method static \Atlas\Relay\Models\Relay cancel(\Atlas\Relay\Models\Relay $relay)
+ * @method static \Atlas\Relay\Models\Relay replay(\Atlas\Relay\Models\Relay $relay)
  */
 class Relay extends Facade
 {

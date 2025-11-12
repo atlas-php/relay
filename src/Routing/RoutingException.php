@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Routing;
+namespace Atlas\Relay\Routing;
 
-use AtlasRelay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayFailure;
 use RuntimeException;
 use Throwable;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Models;
+namespace Atlas\Relay\Models;
 
-use AtlasRelay\Enums\RelayStatus;
+use Atlas\Relay\Enums\RelayStatus;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

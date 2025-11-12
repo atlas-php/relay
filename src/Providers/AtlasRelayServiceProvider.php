@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Providers;
+namespace Atlas\Relay\Providers;
 
-use AtlasRelay\Console\Commands\ArchiveRelaysCommand;
-use AtlasRelay\Console\Commands\EnforceRelayTimeoutsCommand;
-use AtlasRelay\Console\Commands\InspectRelayCommand;
-use AtlasRelay\Console\Commands\PurgeRelayArchivesCommand;
-use AtlasRelay\Console\Commands\RequeueStuckRelaysCommand;
-use AtlasRelay\Console\Commands\RestoreRelayCommand;
-use AtlasRelay\Console\Commands\RetryOverdueRelaysCommand;
-use AtlasRelay\Console\Commands\SeedRelayRoutesCommand;
-use AtlasRelay\Contracts\RelayManagerInterface;
-use AtlasRelay\Models\Relay;
-use AtlasRelay\Models\RelayRoute;
-use AtlasRelay\RelayManager;
-use AtlasRelay\Routing\Router;
-use AtlasRelay\Services\RelayCaptureService;
-use AtlasRelay\Services\RelayDeliveryService;
-use AtlasRelay\Services\RelayLifecycleService;
-use AtlasRelay\Support\RelayJobHelper;
+use Atlas\Relay\Console\Commands\ArchiveRelaysCommand;
+use Atlas\Relay\Console\Commands\EnforceRelayTimeoutsCommand;
+use Atlas\Relay\Console\Commands\InspectRelayCommand;
+use Atlas\Relay\Console\Commands\PurgeRelayArchivesCommand;
+use Atlas\Relay\Console\Commands\RequeueStuckRelaysCommand;
+use Atlas\Relay\Console\Commands\RestoreRelayCommand;
+use Atlas\Relay\Console\Commands\RetryOverdueRelaysCommand;
+use Atlas\Relay\Console\Commands\SeedRelayRoutesCommand;
+use Atlas\Relay\Contracts\RelayManagerInterface;
+use Atlas\Relay\Models\Relay;
+use Atlas\Relay\Models\RelayRoute;
+use Atlas\Relay\RelayManager;
+use Atlas\Relay\Routing\Router;
+use Atlas\Relay\Services\RelayCaptureService;
+use Atlas\Relay\Services\RelayDeliveryService;
+use Atlas\Relay\Services\RelayLifecycleService;
+use Atlas\Relay\Support\RelayJobHelper;
 use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput;

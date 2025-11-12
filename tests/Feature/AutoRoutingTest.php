@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Tests\Feature;
+namespace Atlas\Relay\Tests\Feature;
 
-use AtlasRelay\Enums\RelayFailure;
-use AtlasRelay\Enums\RelayStatus;
-use AtlasRelay\Exceptions\InvalidDestinationUrlException;
-use AtlasRelay\Facades\Relay;
-use AtlasRelay\Models\RelayRoute;
-use AtlasRelay\Routing\RouteContext;
-use AtlasRelay\Routing\Router;
-use AtlasRelay\Routing\RouteResult;
-use AtlasRelay\Routing\RoutingException;
-use AtlasRelay\Routing\RoutingProviderInterface;
-use AtlasRelay\Tests\TestCase;
+use Atlas\Relay\Enums\RelayFailure;
+use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Exceptions\InvalidDestinationUrlException;
+use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Models\RelayRoute;
+use Atlas\Relay\Routing\RouteContext;
+use Atlas\Relay\Routing\Router;
+use Atlas\Relay\Routing\RouteResult;
+use Atlas\Relay\Routing\RoutingException;
+use Atlas\Relay\Routing\RoutingProviderInterface;
+use Atlas\Relay\Tests\TestCase;
 use Illuminate\Http\Request;
 
 /**

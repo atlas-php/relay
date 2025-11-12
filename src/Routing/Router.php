@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Routing;
+namespace Atlas\Relay\Routing;
 
-use AtlasRelay\Models\RelayRoute;
+use Atlas\Relay\Models\RelayRoute;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Arr;
 

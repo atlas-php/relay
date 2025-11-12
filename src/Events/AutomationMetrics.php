@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AtlasRelay\Events;
+namespace Atlas\Relay\Events;
 
 /**
  * Dispatched after automation commands finish to expose counters for observability.
