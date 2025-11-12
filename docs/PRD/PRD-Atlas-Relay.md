@@ -96,19 +96,17 @@ Relay::payload($payload)
 
 Every relay is tracked from start to finish using a unified **relay record** that represents the entire transaction. The authoritative schema for captured request, response, and reliability configuration lives in **Payload Capture PRD**.
 
-**See:** [PRD — Payload Capture](./PRD-Payload-Capture.md) for the complete `atlas_relays` schema (including `response_status`, `response_payload`, retry/delay/timeout fields, and `retry_at`).
+**See:** [Payload Capture](./PRD-Payload-Capture.md) for the complete `atlas_relays` schema (including `response_status`, `response_payload`, retry/delay/timeout fields, and `retry_at`).
 
 ---
 
-## Database Portability Requirements
+## Database Requirements
 
-Atlas Relay must remain installable inside applications that segment data across multiple database connections (e.g., central vs tenant):
+Atlas Relay must be installable across applications with single or multi-database setups.
 
-* Provide a publishable configuration key `atlas-relay.database.connection` (backed by `ATLAS_RELAY_DATABASE_CONNECTION`) that lets consumers choose the connection used for all Atlas Relay migrations and runtime models.
-* When the connection value is `null`, default to Laravel’s primary connection so the package works out-of-the-box.
-* All package migrations must resolve the Schema builder through this configured connection to ensure tables can be created/dropped on tenant-specific databases.
-* Base models must automatically read the same configuration so Eloquent queries always target the same database that owns the tables.
-* Automated tests must cover both the table-name overrides and the connection override path to prevent regressions.
+* Use a publishable config key `atlas-relay.database.connection` (env: `ATLAS_RELAY_DATABASE_CONNECTION`) to define the database connection for all package migrations and models.
+* Default to Laravel’s primary connection if unset.
+* All migrations and base models must use this configured connection automatically.
 
 ---
 
