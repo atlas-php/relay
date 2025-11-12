@@ -238,16 +238,14 @@ class AutoRoutingTest extends TestCase
     {
         $router = new Router(
             app(\Illuminate\Contracts\Cache\Repository::class),
-            new RelayRoute()
+            new RelayRoute
         );
 
         $previous = new \RuntimeException('Resolver boom');
 
         $router->registerProvider('failing', new class($previous) implements RoutingProviderInterface
         {
-            public function __construct(private readonly \Throwable $exception)
-            {
-            }
+            public function __construct(private readonly \Throwable $exception) {}
 
             public function determine(RouteContext $context): ?RouteResult
             {

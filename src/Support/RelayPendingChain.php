@@ -27,7 +27,7 @@ class RelayPendingChain extends PendingChain
         return parent::dispatch()->through(new RelayJobMiddleware($this->relayId));
     }
 
-    public function dispatchIf($boolean): PendingDispatch|null
+    public function dispatchIf($boolean): ?PendingDispatch
     {
         $result = parent::dispatchIf($boolean);
 
@@ -38,7 +38,7 @@ class RelayPendingChain extends PendingChain
         return $result;
     }
 
-    public function dispatchUnless($boolean): PendingDispatch|null
+    public function dispatchUnless($boolean): ?PendingDispatch
     {
         $result = parent::dispatchUnless($boolean);
 

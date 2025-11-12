@@ -6,17 +6,20 @@ namespace AtlasRelay\Services;
 
 use AtlasRelay\Enums\RelayFailure;
 use AtlasRelay\Exceptions\RelayJobFailedException;
+use AtlasRelay\Jobs\DispatchRelayEventJob;
 use AtlasRelay\Models\Relay;
 use AtlasRelay\Support\RelayHttpClient;
 use AtlasRelay\Support\RelayJobContext;
 use AtlasRelay\Support\RelayJobMiddleware;
 use AtlasRelay\Support\RelayPendingChain;
+use Closure;
 use Illuminate\Bus\ChainedBatch;
 use Illuminate\Foundation\Bus\PendingChain;
 use Illuminate\Foundation\Bus\PendingDispatch;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Collection;
+use LogicException;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
@@ -51,6 +54,15 @@ class RelayDeliveryService
 
             throw $exception;
         }
+    }
+
+    public function dispatchEventAsync(Relay $relay, callable $callback): PendingDispatch
+    {
+        $job = new DispatchRelayEventJob(Closure::fromCallable($callback));
+
+        $pending = dispatch($job);
+
+        return $pending->through(new RelayJobMiddleware($relay->id));
     }
 
     public function http(Relay $relay): RelayHttpClient
@@ -98,6 +110,17 @@ class RelayDeliveryService
         } finally {
             RelayJobContext::clear();
         }
+    }
+
+    public function runQueuedEventCallback(callable $callback): mixed
+    {
+        $relay = RelayJobContext::current();
+
+        if ($relay === null) {
+            throw new LogicException('Relay job context is unavailable for dispatched events.');
+        }
+
+        return $this->invokeEventCallback($relay, $callback);
     }
 
     /**
