@@ -229,7 +229,7 @@ class RelayBuilder
         $this->mode ??= 'dispatch_event';
         $relay = $this->ensureRelayCaptured();
 
-        return $this->deliveryService->executeEvent($relay, $callback);
+        return $this->deliveryService->dispatchEventAsync($relay, $callback);
     }
 
     public function dispatchAutoRoute(): self
