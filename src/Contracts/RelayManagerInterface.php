@@ -19,6 +19,10 @@ interface RelayManagerInterface
 
     public function payload(mixed $payload): RelayBuilder;
 
+    public function setProvider(?string $provider): RelayBuilder;
+
+    public function setReferenceId(?string $referenceId): RelayBuilder;
+
     public function http(): RelayHttpClient;
 
     public function cancel(Relay $relay): Relay;

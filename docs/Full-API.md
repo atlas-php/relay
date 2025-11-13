@@ -27,6 +27,8 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | --- | --- |
 | `Relay::request(Request $request): RelayBuilder` | Seed a builder from an inbound HTTP request; headers, method, and payload are copied automatically for routing heuristics and delivery callbacks. |
 | `Relay::payload(mixed $payload): RelayBuilder` | Seed a builder when no HTTP request exists (internal/system triggers). Prefer `request()`/`http()` for typical flows. |
+| `Relay::setProvider(?string $provider): RelayBuilder` | Start a builder, tag it with the provider identifier, and continue configuring (works great before calling `http()`). |
+| `Relay::setReferenceId(?string $referenceId): RelayBuilder` | Same as above but for consumer-defined reference IDs, enabling tagging before issuing `http()` calls. |
 | `Relay::http(): RelayHttpClient` | Return a ready-to-use HTTP client that captures payload + destination directly from the Laravel HTTP call. |
 | `Relay::cancel(Relay $relay): Relay` | Set the relay status to `cancelled` (uses lifecycle service). |
 | `Relay::replay(Relay $relay): Relay` | Reset lifecycle timestamps/attempt counts and enqueue the relay again. |
@@ -46,6 +48,8 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `validationError(string $field, string $message)` | Append validation feedback for reporting/logging prior to capture. |
 | `failWith(RelayFailure $failure, RelayStatus $status = RelayStatus::FAILED)` | Prefill capture state to failed with a specific failure code. |
 | `status(RelayStatus $status)` | Override the initial status before capture. |
+| `setProvider(?string $provider)` | Associate the relay with a provider slug for downstream analytics/filters. Accepts `null` to clear. |
+| `setReferenceId(?string $referenceId)` | Store a consumer-defined identifier (order ID, case ID, etc.) alongside the relay record. |
 
 > **RelayStatus enum:** Status-related methods accept values from `Enums\RelayStatus`, which is stored as an unsigned tinyint on relay records.
 

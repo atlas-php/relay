@@ -67,6 +67,12 @@ $payload = ['event' => 'order.created'];
 // A simple request
 Relay::http()->post('https://api.example.com/webhooks', $payload);
 
+// Tag outbound relays even when starting directly from the manager
+Relay::setProvider('stripe')
+    ->setReferenceId('ord-123')
+    ->http()
+    ->post('https://api.example.com/webhooks', $payload);
+
 // OR with headers
 Relay::http()->withHeaders([
     'X-API-KEY' => '1234567890'

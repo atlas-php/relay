@@ -94,6 +94,24 @@ class HttpDeliveryTest extends TestCase
         $this->assertSame('ord-123', $relay->reference_id);
     }
 
+    public function test_http_entrypoint_supports_provider_and_reference_id_via_manager(): void
+    {
+        Http::fake([
+            'https://example.com/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        Relay::setProvider('stripe')
+            ->setReferenceId('ord-123')
+            ->http()
+            ->post('https://example.com/relay', ['payload' => true]);
+
+        $relay = RelayModel::query()->latest('id')->first();
+
+        $this->assertInstanceOf(RelayModel::class, $relay);
+        $this->assertSame('stripe', $relay->provider);
+        $this->assertSame('ord-123', $relay->reference_id);
+    }
+
     public function test_http_entrypoint_enforces_payload_limit(): void
     {
         Http::fake([

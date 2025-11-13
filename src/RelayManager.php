@@ -27,17 +27,27 @@ class RelayManager implements RelayManagerInterface
 
     public function request(Request $request): RelayBuilder
     {
-        return new RelayBuilder($this->captureService, $this->router, $this->deliveryService, $request);
+        return $this->newBuilder($request);
     }
 
     public function payload(mixed $payload): RelayBuilder
     {
-        return (new RelayBuilder($this->captureService, $this->router, $this->deliveryService))->payload($payload);
+        return $this->newBuilder()->payload($payload);
+    }
+
+    public function setProvider(?string $provider): RelayBuilder
+    {
+        return $this->newBuilder()->setProvider($provider);
+    }
+
+    public function setReferenceId(?string $referenceId): RelayBuilder
+    {
+        return $this->newBuilder()->setReferenceId($referenceId);
     }
 
     public function http(): RelayHttpClient
     {
-        return (new RelayBuilder($this->captureService, $this->router, $this->deliveryService))->http();
+        return $this->newBuilder()->http();
     }
 
     public function cancel(Relay $relay): Relay
@@ -48,5 +58,15 @@ class RelayManager implements RelayManagerInterface
     public function replay(Relay $relay): Relay
     {
         return $this->lifecycleService->replay($relay);
+    }
+
+    private function newBuilder(?Request $request = null): RelayBuilder
+    {
+        return new RelayBuilder(
+            $this->captureService,
+            $this->router,
+            $this->deliveryService,
+            $request
+        );
     }
 }
