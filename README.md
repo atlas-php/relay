@@ -280,33 +280,6 @@ Error definitions and enums are in [Outbound Delivery](./docs/PRD/PRD-Outbound-D
 
 ---
 
-## 🧪 Example Usage
-
-### Receiving a Webhook and Forwarding Automatically
-```php
-public function handle(Request $request)
-{
-    Relay::request($request)
-        ->payload($request->all())
-        ->dispatchAutoRoute();
-}
-```
-
-### Sending an Outbound Webhook
-```php
-Relay::payload(['data' => 'this is a test payload'])
-    ->http()
-    ->post('https://hooks.example.com/receive');
-```
-
-### Internal Event Relay
-```php
-Relay::payload(['id' => 42])
-    ->event(fn() => ExampleJob::dispatch());
-```
-
----
-
 ## 🤝 Contributing
 
 Please review the [Contributing Guide](./CONTRIBUTING.md) before opening a pull request. It covers the mandatory Pint/PHPStan/test workflow, the PRD-driven standards outlined in [AGENTS.md](./AGENTS.md), and the  branching + Conventional Commit rules we enforce across the project. See [AGENTS.md](./AGENTS.md) for the agent workflow and PRD alignment expectations that apply to every change.
