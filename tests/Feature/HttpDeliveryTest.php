@@ -9,6 +9,7 @@ use Atlas\Relay\Enums\RelayFailure;
 use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Exceptions\RelayHttpException;
 use Atlas\Relay\Facades\Relay;
+use Atlas\Relay\Models\Relay as RelayModel;
 use Atlas\Relay\Tests\TestCase;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Psr7\Request as PsrRequest;
@@ -49,6 +50,47 @@ class HttpDeliveryTest extends TestCase
         $this->assertSame(DestinationMethod::POST, $relay->destination_method);
         $this->assertSame(200, $relay->response_http_status);
         $this->assertSame(['ok' => true], $relay->response_payload);
+    }
+
+    public function test_http_entrypoint_tracks_payload_and_destination_without_manual_builder(): void
+    {
+        Http::fake([
+            'https://example.com/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        Relay::http()->post('https://example.com/relay', ['payload' => true]);
+
+        $relay = RelayModel::query()->latest('id')->first();
+
+        $this->assertInstanceOf(RelayModel::class, $relay);
+        $this->assertSame(['payload' => true], $relay->payload);
+        $this->assertSame('https://example.com/relay', $relay->destination_url);
+        $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+    }
+
+    public function test_http_entrypoint_enforces_payload_limit(): void
+    {
+        Http::fake([
+            'https://example.com/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        $payload = ['data' => str_repeat('A', 70 * 1024)];
+        $limit = (int) config('atlas-relay.capture.max_payload_bytes', 64 * 1024);
+
+        try {
+            Relay::http()->post('https://example.com/relay', $payload);
+            $this->fail('Payload limit exception was not thrown.');
+        } catch (RelayHttpException $exception) {
+            $relay = RelayModel::query()->latest('id')->first();
+
+            $this->assertInstanceOf(RelayModel::class, $relay);
+            $this->assertSame(RelayFailure::PAYLOAD_TOO_LARGE->value, $relay->failure_reason);
+
+            $this->assertSame(
+                sprintf('Payload exceeds configured limit of %d bytes.', $limit),
+                $exception->getMessage()
+            );
+        }
     }
 
     public function test_http_delivery_records_destination_url_before_transport(): void

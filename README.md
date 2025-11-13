@@ -92,19 +92,17 @@ Relay::request($request)->dispatch(new ExampleJob);
 
 ### Send a Webhook
 ```php
-Relay::payload($payload)->http()->post('https://api.example.com/webhooks');
-```
-Sends an outbound webhook directly without route lookup. The `RelayHttpClient` wrapper still honors the usual chainable `PendingRequest` methods before executing verbs.
-(Relates to [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md))
+$payload = ['event' => 'order.created'];
 
-#### Header Propagation
-```php
-Relay::payload($payload)
-    ->setHeaders(['X-API-KEY' => '1234567890'])
-    ->http()
-    ->post('https://api.example.com/webhooks');
+// A simple request
+Relay::http()->post('https://api.example.com/webhooks', $payload);
+
+// OR with headers
+Relay::http()->withHeaders([
+    'X-API-KEY' => '1234567890'
+])->post('https://api.example.com/webhooks', $payload);
 ```
-Use `setHeaders()` to push consumer-specific headers into outbound HTTP deliveries. When you seed the builder with `Relay::request($request)`, inbound headers are copied automatically so AutoRouting flows can forward them along with any route-defined defaults.
+You can use the Laravel `http()` methods you're most likely already using. (See [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)).
 
 ---
 
@@ -128,7 +126,7 @@ Performs immediate inbound-to-outbound delivery, returning the response inline w
 
 | Mode         | Entry Point                             | Notes                                                                                                                                 |
 |--------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| HTTP         | `Relay::payload()->http()`              | Returns an `Atlas\Relay\Support\RelayHttpClient` wrapper that proxies `PendingRequest` configuration while applying relay safeguards. |
+| HTTP         | `Relay::http()`                         | Returns an `Atlas\Relay\Support\RelayHttpClient` wrapper that proxies `PendingRequest` configuration while applying relay safeguards. |
 | Event        | `Relay::request()->event()`             | Executes sync callbacks/listeners and updates lifecycle before bubbling exceptions.                                                   |
 | Dispatch     | `Relay::payload()->dispatch()`          | Returns native `PendingDispatch`; job middleware records success/failure.                                                             |
 | DispatchSync | `Relay::payload()->dispatchSync()`      | Runs immediately in-process with lifecycle tracking.                                                                                  |

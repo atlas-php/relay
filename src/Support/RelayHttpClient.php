@@ -10,15 +10,18 @@ use Atlas\Relay\Exceptions\RelayHttpException;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Services\RelayLifecycleService;
 use GuzzleHttp\Exception\TooManyRedirectsException;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use JsonSerializable;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
+use Traversable;
 
 /**
  * Proxy around Laravel's HTTP client that enforces PRD rules and records relay lifecycle data.
@@ -93,6 +96,7 @@ class RelayHttpClient
             }
 
             $this->assertHttps($url);
+            $this->registerPayloadFromArguments($arguments);
             $this->registerDestination($url, $destinationMethod);
         } catch (RelayHttpException $exception) {
             $failure = $exception->failure() ?? RelayFailure::OUTBOUND_HTTP_ERROR;
@@ -282,6 +286,96 @@ class RelayHttpClient
                 },
             ],
         ]);
+    }
+
+    /**
+     * @param  array<int, mixed>  $arguments
+     */
+    private function registerPayloadFromArguments(array $arguments): void
+    {
+        if ($this->relay->payload !== null) {
+            return;
+        }
+
+        $payload = $arguments[1] ?? null;
+
+        if ($payload === null) {
+            return;
+        }
+
+        $normalized = $this->normalizeOutgoingPayload($payload);
+
+        if ($normalized === null) {
+            return;
+        }
+
+        $maxBytes = (int) config('atlas-relay.capture.max_payload_bytes', 64 * 1024);
+        $payloadBytes = $this->payloadSize($normalized);
+
+        if ($payloadBytes > $maxBytes) {
+            throw new RelayHttpException(
+                sprintf('Payload exceeds configured limit of %d bytes.', $maxBytes),
+                RelayFailure::PAYLOAD_TOO_LARGE
+            );
+        }
+
+        $this->relay->forceFill(['payload' => $normalized])->save();
+    }
+
+    private function normalizeOutgoingPayload(mixed $payload): mixed
+    {
+        if ($payload instanceof Arrayable) {
+            return $payload->toArray();
+        }
+
+        if ($payload instanceof JsonSerializable) {
+            $payload = $payload->jsonSerialize();
+        } elseif ($payload instanceof Traversable) {
+            $payload = iterator_to_array($payload);
+        } elseif (is_object($payload) && method_exists($payload, 'toArray')) {
+            $converted = $payload->toArray();
+
+            if (is_array($converted)) {
+                $payload = $converted;
+            }
+        }
+
+        if (is_array($payload)) {
+            return $payload;
+        }
+
+        if ($payload instanceof \stdClass) {
+            return (array) $payload;
+        }
+
+        if (is_scalar($payload) || $payload === null) {
+            return $payload;
+        }
+
+        if (is_object($payload) && method_exists($payload, '__toString')) {
+            return (string) $payload;
+        }
+
+        return null;
+    }
+
+    private function payloadSize(mixed $payload): int
+    {
+        if ($payload === null) {
+            return 0;
+        }
+
+        if (is_string($payload)) {
+            return strlen($payload);
+        }
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
+
+        if ($encoded === false) {
+            return 0;
+        }
+
+        return strlen($encoded);
     }
 
     private function registerDestination(string $url, DestinationMethod $method): void

@@ -10,7 +10,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | --- | --- | --- |
 | `Atlas\Relay\Providers\AtlasRelayServiceProvider` | Auto-discovered package provider | Registers config, migrations, commands, and singletons. |
 | `Atlas\Relay\Facades\Relay` facade | `atlas-relay.manager` binding | Fluent API entrypoint; import via `use Atlas\Relay\Facades\Relay;`. |
-| `Atlas\Relay\Contracts\RelayManagerInterface` / `app('atlas-relay.manager')` | `Atlas\Relay\RelayManager` | Provides `request()`, `payload()`, `cancel()`, `replay()` builder entrypoints. |
+| `Atlas\Relay\Contracts\RelayManagerInterface` / `app('atlas-relay.manager')` | `Atlas\Relay\RelayManager` | Provides `request()`, `payload()`, `http()`, `cancel()`, `replay()` entrypoints. |
 | `Atlas\Relay\Routing\Router` / `app('atlas-relay.router')` | Router singleton | Supports database routes and custom providers. |
 | `Atlas\Relay\Services\RelayCaptureService` | Capture service singleton | Persistent relay storage according to Payload Capture PRD. |
 | `Atlas\Relay\Services\RelayLifecycleService` | Lifecycle service singleton | Cancelling/replaying/marking relays; used by delivery helpers. |
@@ -27,6 +27,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | --- | --- |
 | `Relay::request(Request $request): RelayBuilder` | Seed a builder from an inbound HTTP request; headers, method, and payload are copied automatically for routing heuristics and delivery callbacks. |
 | `Relay::payload(mixed $payload): RelayBuilder` | Seed a builder without an HTTP request (e.g. internal events). |
+| `Relay::http(): RelayHttpClient` | Return a ready-to-use HTTP client that captures payload + destination directly from the Laravel HTTP call. |
 | `Relay::cancel(Relay $relay): Relay` | Set the relay status to `cancelled` (uses lifecycle service). |
 | `Relay::replay(Relay $relay): Relay` | Reset lifecycle timestamps/attempt counts and enqueue the relay again. |
 

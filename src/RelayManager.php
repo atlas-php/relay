@@ -10,6 +10,7 @@ use Atlas\Relay\Routing\Router;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
 use Atlas\Relay\Services\RelayLifecycleService;
+use Atlas\Relay\Support\RelayHttpClient;
 use Illuminate\Http\Request;
 
 /**
@@ -32,6 +33,11 @@ class RelayManager implements RelayManagerInterface
     public function payload(mixed $payload): RelayBuilder
     {
         return (new RelayBuilder($this->captureService, $this->router, $this->deliveryService))->payload($payload);
+    }
+
+    public function http(): RelayHttpClient
+    {
+        return (new RelayBuilder($this->captureService, $this->router, $this->deliveryService))->http();
     }
 
     public function cancel(Relay $relay): Relay

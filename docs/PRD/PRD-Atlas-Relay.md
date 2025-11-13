@@ -44,14 +44,14 @@ Relay::request($req)->autoRouteImmediately();
 
 ### Direct HTTP
 ```php
-Relay::payload($p)->http()->post('https://example.com');
+Relay::http()->post('https://example.com', ['payload' => true]);
 ```
 
 ---
 
 ## Functional Summary
 - **Relay::request()** captures inbound HTTP, normalizes headers, stores payload, and exposes that payload directly on the builder for immediate routing/delivery usage.
-- **payload()** sets stored payload.
+- **payload()** sets stored payload (optional when using `Relay::http()` because payload is captured from the request data).
 - **event() / dispatchEvent()** run internal logic (sync or queued).
 - **dispatchAutoRoute()** uses domain/route mapping.
 - **autoRouteImmediately()** delivers synchronously and returns response.

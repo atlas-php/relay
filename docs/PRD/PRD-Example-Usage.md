@@ -118,8 +118,7 @@ Relay::request($request)
 ## 6) Direct HTTP (for reference)
 
 ```php
-Relay::payload($data)
-    ->http()
+Relay::http()
     ->withHeaders(['X-App' => 'Atlas'])
     ->timeout(30)        // Laravel HTTP client timeout (seconds)
     ->retry(3, 2000)     // Laravel transport-level retry (ms delay)
@@ -128,7 +127,8 @@ Relay::payload($data)
 
 **Behavior**
 - Delegates to Laravel’s `Http` under the hood; **all client features** available.
-- Atlas intercepts first, records `response_http_status`/`response_payload`, then returns the response.
+- Atlas intercepts first, records payload/method/URL plus `response_http_status`/`response_payload`, then returns the response.
+- Need lifecycle overrides before HTTP? You can still seed a builder via `Relay::payload($data)` (or `Relay::request()`), configure it, and then call `->http()` as before.
 
 ---
 

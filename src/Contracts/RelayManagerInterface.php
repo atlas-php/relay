@@ -6,6 +6,7 @@ namespace Atlas\Relay\Contracts;
 
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\RelayBuilder;
+use Atlas\Relay\Support\RelayHttpClient;
 use Illuminate\Http\Request;
 
 /**
@@ -17,6 +18,8 @@ interface RelayManagerInterface
     public function request(Request $request): RelayBuilder;
 
     public function payload(mixed $payload): RelayBuilder;
+
+    public function http(): RelayHttpClient;
 
     public function cancel(Relay $relay): Relay;
 
