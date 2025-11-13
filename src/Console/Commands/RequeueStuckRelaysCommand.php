@@ -35,7 +35,6 @@ class RequeueStuckRelaysCommand extends Command
 
         Relay::query()
             ->where('status', RelayStatus::PROCESSING->value)
-            ->whereNull('archived_at')
             ->where(function ($query) use ($cutoff): void {
                 $query->whereNull('processing_at')
                     ->orWhere('processing_at', '<=', $cutoff);
@@ -46,10 +45,8 @@ class RequeueStuckRelaysCommand extends Command
                     $relay->forceFill([
                         'status' => RelayStatus::QUEUED,
                         'processing_at' => null,
-                        'processing_finished_at' => null,
                         'last_attempt_duration_ms' => null,
                         'completed_at' => null,
-                        'failed_at' => null,
                         'next_retry_at' => now(),
                     ])->save();
 

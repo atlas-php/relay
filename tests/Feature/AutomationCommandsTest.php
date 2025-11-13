@@ -42,8 +42,6 @@ class AutomationCommandsTest extends TestCase
             'mode' => 'auto_route',
             'is_retry' => true,
             'next_retry_at' => Carbon::now()->subMinute(),
-            'completed_at' => Carbon::now()->subSeconds(30),
-            'failed_at' => Carbon::now()->subSeconds(30),
         ]);
 
         $this->runPendingCommand('atlas-relay:retry-overdue')->assertExitCode(0);
@@ -53,7 +51,6 @@ class AutomationCommandsTest extends TestCase
         $this->assertNull($relay->next_retry_at);
         $this->assertNull($relay->failure_reason);
         $this->assertNull($relay->completed_at);
-        $this->assertNull($relay->failed_at);
     }
 
     public function test_requeue_stuck_command_moves_processing_relays_back_to_queue(): void
@@ -65,7 +62,6 @@ class AutomationCommandsTest extends TestCase
             'status' => RelayStatus::PROCESSING,
             'mode' => 'event',
             'processing_at' => Carbon::now()->subMinutes(30),
-            'completed_at' => Carbon::now()->subMinutes(30),
         ]);
 
         $this->runPendingCommand('atlas-relay:requeue-stuck')->assertExitCode(0);
@@ -74,7 +70,6 @@ class AutomationCommandsTest extends TestCase
         $this->assertSame(RelayStatus::QUEUED, $relay->status);
         $this->assertNull($relay->processing_at);
         $this->assertNull($relay->completed_at);
-        $this->assertNull($relay->failed_at);
         $this->assertTrue($relay->next_retry_at?->equalTo(Carbon::now()));
     }
 

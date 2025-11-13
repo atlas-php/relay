@@ -44,7 +44,6 @@ class ArchiveRelaysCommand extends Command
         $count = 0;
 
         Relay::query()
-            ->whereNull('archived_at')
             ->where('updated_at', '<=', $cutoff)
             ->orderBy('id')
             ->chunkById($chunkSize, function ($relays) use (&$count): void {

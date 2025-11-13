@@ -34,14 +34,8 @@ use Illuminate\Database\Eloquent\Builder;
  * @property int|null $http_timeout_seconds
  * @property int|null $last_attempt_duration_ms
  * @property \Carbon\CarbonImmutable|null $next_retry_at
- * @property \Carbon\CarbonImmutable|null $first_attempted_at
- * @property \Carbon\CarbonImmutable|null $last_attempted_at
  * @property \Carbon\CarbonImmutable|null $processing_at
- * @property \Carbon\CarbonImmutable|null $processing_finished_at
  * @property \Carbon\CarbonImmutable|null $completed_at
- * @property \Carbon\CarbonImmutable|null $failed_at
- * @property \Carbon\CarbonImmutable|null $cancelled_at
- * @property \Carbon\CarbonImmutable|null $archived_at
  * @property array<mixed>|null $meta
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
@@ -71,14 +65,8 @@ class Relay extends AtlasModel
         'failure_reason' => 'integer',
         'route_id' => 'integer',
         'next_retry_at' => 'immutable_datetime',
-        'first_attempted_at' => 'immutable_datetime',
-        'last_attempted_at' => 'immutable_datetime',
         'processing_at' => 'immutable_datetime',
-        'processing_finished_at' => 'immutable_datetime',
         'completed_at' => 'immutable_datetime',
-        'failed_at' => 'immutable_datetime',
-        'cancelled_at' => 'immutable_datetime',
-        'archived_at' => 'immutable_datetime',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
@@ -91,18 +79,8 @@ class Relay extends AtlasModel
     {
         return $query
             ->where('is_retry', true)
-            ->whereNull('archived_at')
             ->whereNotNull('next_retry_at')
             ->where('next_retry_at', '<=', now());
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    public function scopeUnarchived(Builder $query): Builder
-    {
-        return $query->whereNull('archived_at');
     }
 
     protected function tableNameConfigKey(): string

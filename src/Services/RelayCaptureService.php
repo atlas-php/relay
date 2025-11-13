@@ -152,14 +152,8 @@ class RelayCaptureService
             'http_timeout_seconds' => config('atlas-relay.lifecycle.default_http_timeout_seconds'),
             'last_attempt_duration_ms' => null,
             'next_retry_at' => null,
-            'first_attempted_at' => null,
-            'last_attempted_at' => null,
             'processing_at' => null,
-            'processing_finished_at' => null,
             'completed_at' => null,
-            'failed_at' => null,
-            'cancelled_at' => null,
-            'archived_at' => null,
         ];
     }
 

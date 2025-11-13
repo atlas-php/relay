@@ -26,12 +26,8 @@ class RelayLifecycleService
         $relay->forceFill([
             'status' => RelayStatus::PROCESSING,
             'attempt_count' => ($relay->attempt_count ?? 0) + 1,
-            'first_attempted_at' => $relay->first_attempted_at ?? $now,
-            'last_attempted_at' => $now,
             'processing_at' => $now,
-            'processing_finished_at' => null,
             'completed_at' => null,
-            'failed_at' => null,
         ])->save();
 
         Event::dispatch(new RelayAttemptStarted($relay));
@@ -49,7 +45,6 @@ class RelayLifecycleService
         $relay->forceFill(array_merge([
             'status' => RelayStatus::COMPLETED,
             'failure_reason' => null,
-            'processing_finished_at' => $now,
             'completed_at' => $now,
             'last_attempt_duration_ms' => $durationMs,
             'next_retry_at' => null,
@@ -74,8 +69,6 @@ class RelayLifecycleService
         $relay->forceFill(array_merge([
             'status' => RelayStatus::FAILED,
             'failure_reason' => $failure->value,
-            'failed_at' => $relay->failed_at ?? $now,
-            'processing_finished_at' => $now,
             'completed_at' => $now,
             'last_attempt_duration_ms' => $durationMs,
             'next_retry_at' => null,
@@ -109,9 +102,7 @@ class RelayLifecycleService
         $relay->forceFill([
             'status' => RelayStatus::CANCELLED,
             'failure_reason' => ($reason ?? RelayFailure::CANCELLED)->value,
-            'cancelled_at' => $this->now(),
-            'failed_at' => null,
-            'completed_at' => null,
+            'completed_at' => $this->now(),
             'next_retry_at' => null,
         ])->save();
 
@@ -123,15 +114,9 @@ class RelayLifecycleService
         $relay->forceFill([
             'status' => RelayStatus::QUEUED,
             'failure_reason' => null,
-            'archived_at' => null,
-            'cancelled_at' => null,
-            'failed_at' => null,
             'completed_at' => null,
             'next_retry_at' => null,
             'processing_at' => null,
-            'processing_finished_at' => null,
-            'first_attempted_at' => null,
-            'last_attempted_at' => null,
             'attempt_count' => 0,
         ])->save();
 

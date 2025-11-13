@@ -35,7 +35,6 @@ class EnforceRelayTimeoutsCommand extends Command
 
         Relay::query()
             ->where('status', RelayStatus::PROCESSING->value)
-            ->whereNull('archived_at')
             ->whereNotNull('processing_at')
             ->orderBy('id')
             ->chunkById($chunkSize, function ($relays) use (&$count, $lifecycle, $bufferSeconds): void {

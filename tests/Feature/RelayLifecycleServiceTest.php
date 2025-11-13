@@ -35,12 +35,12 @@ class RelayLifecycleServiceTest extends TestCase
 
         $cancelled = $manager->cancel($relay);
         $this->assertSame(RelayStatus::CANCELLED, $cancelled->status);
-        $this->assertNotNull($cancelled->cancelled_at);
+        $this->assertNotNull($cancelled->completed_at);
 
         $replayed = $manager->replay($cancelled);
         $this->assertSame(RelayStatus::QUEUED, $replayed->status);
         $this->assertNull($replayed->failure_reason);
-        $this->assertNull($replayed->cancelled_at);
+        $this->assertNull($replayed->completed_at);
         $this->assertSame(0, $replayed->attempt_count);
     }
 
@@ -68,7 +68,6 @@ class RelayLifecycleServiceTest extends TestCase
 
         $this->assertSame(RelayStatus::FAILED, $relay->status);
         $this->assertTrue($relay->completed_at?->equalTo(Carbon::now()));
-        $this->assertTrue($relay->failed_at?->equalTo(Carbon::now()));
         $this->assertNull($relay->next_retry_at);
 
         $relay->forceFill(['status' => RelayStatus::QUEUED])->save();
@@ -77,7 +76,6 @@ class RelayLifecycleServiceTest extends TestCase
         $lifecycle->startAttempt($relay);
         $relay->refresh();
 
-        $this->assertNull($relay->failed_at);
         $this->assertNull($relay->completed_at);
 
         Carbon::setTestNow('2025-04-01 08:07:00');

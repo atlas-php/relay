@@ -75,6 +75,7 @@ Inline fields provide all required metrics:
 - `status`, `failure_reason`, `response_status`, `response_payload` (truncated)
 - Attempt counts, retry/delay/timeout metadata
 - `next_retry_at`, `processing_at`, `completed_at`, and other timestamps/duration fields
+- `completed_at` records the end of any lifecycle (success, failure, or cancellation) and is the canonical timestamp for retention policies.
 
 Derived metrics for operational reporting:
 - `relay_archived_count`

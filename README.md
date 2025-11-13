@@ -176,7 +176,7 @@ All webhook activity — inbound and outbound — is fully logged:
 * Request metadata (source, headers)
 * Payload and response details
 * Retry attempts and failure causes
-* Processing (`processing_at`) and completion (`completed_at`) timestamps
+* Processing start (`processing_at`) and finalization (`completed_at` for completed/failed/cancelled) timestamps
 
 Every relay becomes a searchable audit trail of webhook traffic.  
 For full schema and retention behavior, see [Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md).

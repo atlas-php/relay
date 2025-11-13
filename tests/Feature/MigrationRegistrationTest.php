@@ -46,14 +46,8 @@ class MigrationRegistrationTest extends TestCase
             'http_timeout_seconds',
             'last_attempt_duration_ms',
             'next_retry_at',
-            'first_attempted_at',
-            'last_attempted_at',
             'processing_at',
-            'processing_finished_at',
             'completed_at',
-            'failed_at',
-            'cancelled_at',
-            'archived_at',
             'meta',
         ];
 
@@ -76,6 +70,7 @@ class MigrationRegistrationTest extends TestCase
         $this->assertTrue(Schema::hasColumns(
             config('atlas-relay.tables.relay_archives'),
             array_merge($expectedLifecycleColumns, [
+                'archived_at',
                 'created_at',
                 'updated_at',
             ])
