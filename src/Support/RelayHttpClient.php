@@ -93,6 +93,7 @@ class RelayHttpClient
             }
 
             $this->assertHttps($url);
+            $this->registerDestination($url, $destinationMethod);
         } catch (RelayHttpException $exception) {
             $failure = $exception->failure() ?? RelayFailure::OUTBOUND_HTTP_ERROR;
 
@@ -100,12 +101,6 @@ class RelayHttpClient
             $this->lifecycle->recordResponse($this->relay, null, $exception->getMessage());
 
             throw $exception;
-        }
-
-        if ($this->relay->destination_method?->value !== $destinationMethod->value) {
-            $this->relay->forceFill([
-                'destination_method' => $destinationMethod,
-            ])->save();
         }
 
         $relay = $this->lifecycle->startAttempt($this->relay);
@@ -287,5 +282,33 @@ class RelayHttpClient
                 },
             ],
         ]);
+    }
+
+    private function registerDestination(string $url, DestinationMethod $method): void
+    {
+        $maxLength = 255;
+
+        if (strlen($url) > $maxLength) {
+            throw new RelayHttpException(
+                sprintf('Destination URL may not exceed %d characters; received %d.', $maxLength, strlen($url)),
+                RelayFailure::OUTBOUND_HTTP_ERROR
+            );
+        }
+
+        $attributes = [];
+
+        if ($this->relay->destination_url !== $url) {
+            $attributes['destination_url'] = $url;
+        }
+
+        if ($this->relay->destination_method?->value !== $method->value) {
+            $attributes['destination_method'] = $method;
+        }
+
+        if ($attributes === []) {
+            return;
+        }
+
+        $this->relay->forceFill($attributes)->save();
     }
 }

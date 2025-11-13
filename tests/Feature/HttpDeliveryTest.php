@@ -51,6 +51,25 @@ class HttpDeliveryTest extends TestCase
         $this->assertSame(['ok' => true], $relay->response_payload);
     }
 
+    public function test_http_delivery_records_destination_url_before_transport(): void
+    {
+        $builder = Relay::payload(['status' => 'queued']);
+
+        Http::fake([
+            'https://example.com/*' => function (Request $request) use ($builder) {
+                $relay = $this->assertRelayInstance($builder->relay());
+                $relay->refresh();
+
+                $this->assertSame('https://example.com/relay', $relay->destination_url);
+                $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+
+                return Http::response(['ok' => true], 200);
+            },
+        ]);
+
+        $builder->http()->post('https://example.com/relay');
+    }
+
     public function test_http_delivery_applies_custom_headers(): void
     {
         Http::fake([
