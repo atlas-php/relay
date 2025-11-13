@@ -21,13 +21,11 @@ Atlas Relay ensures:
 
 ## ⚡ Core Concepts
 
-**Relay Flow:**
-
 `Request → Payload Capture → Routing → Outbound Delivery → Complete → Archive`
 
 Each stage of the lifecycle is defined in its own PRD:
 - [Payload Capture](./docs/PRD/PRD-Payload-Capture.md): receiving and validating data
-- [Routing](./docs/PRD/PRD-Routing.md): determining the correct destination
+- [Routing](./docs/PRD/PRD-Routing.md): determining the correct destination (if using auto-route)
 - [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md): transmitting payloads and handling retries
 - [Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md): long-term retention and audit trails
 
@@ -74,17 +72,6 @@ protected function schedule(Schedule $schedule): void
     RelayScheduler::register($schedule);
 }
 ```
-
----
-
-## ✨ Feature Highlights
-
-* Unified webhook lifecycle — capture, route, and deliver.
-* Receive **and** send webhooks through one consistent API.
-* Auto-route inbound webhooks to external destinations.
-* Supports synchronous and asynchronous relay modes.
-* Retry, delay, and timeout control for delivery reliability.
-* Built-in caching, logging, and archiving for performance and scale.
 
 ---
 
@@ -161,7 +148,7 @@ Every webhook or payload relay is tracked from start to finish in the unified `a
 | **Completed**  | Relay finished successfully.                |
 | **Cancelled**  | Relay manually stopped before completion.   |
 
-Learn more in [PRD — Atlas Relay](./docs/PRD/PRD-Atlas-Relay.md).
+Learn more in [Atlas Relay PRD](./docs/PRD/PRD-Atlas-Relay.md).
 
 ---
 
@@ -307,7 +294,7 @@ public function handle(Request $request)
 
 ### Sending an Outbound Webhook
 ```php
-Relay::payload(['status' => 'processed'])
+Relay::payload(['data' => 'this is a test payload'])
     ->http()
     ->post('https://hooks.example.com/receive');
 ```
@@ -315,7 +302,7 @@ Relay::payload(['status' => 'processed'])
 ### Internal Event Relay
 ```php
 Relay::payload(['id' => 42])
-    ->dispatchEvent(fn() => ExampleJob::dispatch());
+    ->event(fn() => ExampleJob::dispatch());
 ```
 
 ---
