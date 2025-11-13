@@ -23,12 +23,12 @@ Relay Created → Inline Updates → Completed/Failed → Archived → Purged
 ## Data Model
 
 ### Source of Truth
-- `atlas_relays` contains all lifecycle metadata: status, failure_reason, response_status/payload, timing fields, attempts, retry/delay/timeout config, `retry_at`, etc.
+- `atlas_relays` contains all lifecycle metadata: status, failure_reason, response_status/payload, timing fields, attempts, retry/delay/timeout config, `next_retry_at`, etc.
 - No separate log tables.
 - Archived records are exact copies.
 
 ### Archive Table
-- `atlas_relay_archives` mirrors `atlas_relays` exactly.
+- `atlas_relay_archives` mirrors `atlas_relays` exactly (same columns plus `archived_at` to track retention windows).
 - Used for audits, analytics, and historical queries.
 - Records are immutable.
 
@@ -48,7 +48,7 @@ Ran daily:
 ## Purge Process
 Ran nightly after archiving:
 
-- Delete archive records older than `ATLAS_RELAY_PURGE_DAYS`.
+- Delete archive records older than `ATLAS_RELAY_PURGE_DAYS`, based on the `archived_at` timestamp.
 - Fully transactional and resumable.
 
 ---
@@ -74,7 +74,7 @@ Inline fields provide all required metrics:
 
 - `status`, `failure_reason`, `response_status`, `response_payload` (truncated)
 - Attempt counts, retry/delay/timeout metadata
-- `retry_at`, timestamps, duration fields
+- `next_retry_at`, `processing_at`, `completed_at`, and other timestamps/duration fields
 
 Derived metrics for operational reporting:
 - `relay_archived_count`

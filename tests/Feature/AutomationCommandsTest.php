@@ -41,15 +41,19 @@ class AutomationCommandsTest extends TestCase
             'status' => RelayStatus::FAILED,
             'mode' => 'auto_route',
             'is_retry' => true,
-            'retry_at' => Carbon::now()->subMinute(),
+            'next_retry_at' => Carbon::now()->subMinute(),
+            'completed_at' => Carbon::now()->subSeconds(30),
+            'failed_at' => Carbon::now()->subSeconds(30),
         ]);
 
         $this->runPendingCommand('atlas-relay:retry-overdue')->assertExitCode(0);
 
         $relay->refresh();
         $this->assertSame(RelayStatus::QUEUED, $relay->status);
-        $this->assertNull($relay->retry_at);
+        $this->assertNull($relay->next_retry_at);
         $this->assertNull($relay->failure_reason);
+        $this->assertNull($relay->completed_at);
+        $this->assertNull($relay->failed_at);
     }
 
     public function test_requeue_stuck_command_moves_processing_relays_back_to_queue(): void
@@ -60,14 +64,18 @@ class AutomationCommandsTest extends TestCase
             'payload' => [],
             'status' => RelayStatus::PROCESSING,
             'mode' => 'event',
-            'processing_started_at' => Carbon::now()->subMinutes(30),
+            'processing_at' => Carbon::now()->subMinutes(30),
+            'completed_at' => Carbon::now()->subMinutes(30),
         ]);
 
         $this->runPendingCommand('atlas-relay:requeue-stuck')->assertExitCode(0);
 
         $relay->refresh();
         $this->assertSame(RelayStatus::QUEUED, $relay->status);
-        $this->assertNull($relay->processing_started_at);
+        $this->assertNull($relay->processing_at);
+        $this->assertNull($relay->completed_at);
+        $this->assertNull($relay->failed_at);
+        $this->assertTrue($relay->next_retry_at?->equalTo(Carbon::now()));
     }
 
     public function test_enforce_timeouts_marks_relays_failed(): void
@@ -79,7 +87,7 @@ class AutomationCommandsTest extends TestCase
             'status' => RelayStatus::PROCESSING,
             'mode' => 'http',
             'timeout_seconds' => 60,
-            'processing_started_at' => Carbon::now()->subMinutes(5),
+            'processing_at' => Carbon::now()->subMinutes(5),
         ]);
 
         $this->runPendingCommand('atlas-relay:enforce-timeouts')->assertExitCode(0);

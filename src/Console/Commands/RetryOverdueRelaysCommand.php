@@ -36,10 +36,12 @@ class RetryOverdueRelaysCommand extends Command
                 foreach ($relays as $relay) {
                     $relay->forceFill([
                         'status' => RelayStatus::QUEUED,
-                        'retry_at' => null,
+                        'next_retry_at' => null,
                         'failure_reason' => null,
-                        'processing_started_at' => null,
+                        'processing_at' => null,
                         'processing_finished_at' => null,
+                        'completed_at' => null,
+                        'failed_at' => null,
                         'last_attempt_duration_ms' => null,
                     ])->save();
 

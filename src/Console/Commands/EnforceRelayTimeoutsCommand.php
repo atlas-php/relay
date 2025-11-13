@@ -36,7 +36,7 @@ class EnforceRelayTimeoutsCommand extends Command
         Relay::query()
             ->where('status', RelayStatus::PROCESSING->value)
             ->whereNull('archived_at')
-            ->whereNotNull('processing_started_at')
+            ->whereNotNull('processing_at')
             ->orderBy('id')
             ->chunkById($chunkSize, function ($relays) use (&$count, $lifecycle, $bufferSeconds): void {
                 foreach ($relays as $relay) {
@@ -46,11 +46,11 @@ class EnforceRelayTimeoutsCommand extends Command
                         continue;
                     }
 
-                    if (! $relay->processing_started_at instanceof \DateTimeInterface) {
+                    if (! $relay->processing_at instanceof \DateTimeInterface) {
                         continue;
                     }
 
-                    $deadline = Carbon::parse($relay->processing_started_at)
+                    $deadline = Carbon::parse($relay->processing_at)
                         ->addSeconds($timeout + $bufferSeconds);
 
                     if ($deadline->isPast()) {

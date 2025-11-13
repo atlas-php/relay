@@ -63,7 +63,9 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 | `delay_seconds`        | Delay before first execution.                           |
 | `timeout_seconds`      | Max relay execution time.                               |
 | `http_timeout_seconds` | Max outbound HTTP timeout.                              |
-| `retry_at`             | Next retry timestamp.                                   |
+| `next_retry_at`        | Next retry timestamp.                                   |
+| `processing_at`        | When the current attempt began processing.              |
+| `completed_at`         | When the relay finished (success or failure).           |
 | `created_at`           | Capture timestamp.                                      |
 | `updated_at`           | Last state change.                                      |
 
@@ -111,4 +113,3 @@ All lifecycle details—including retries, responses, durations, and failure rea
 - Concurrent requests isolated via atomic inserts.
 
 ---
-

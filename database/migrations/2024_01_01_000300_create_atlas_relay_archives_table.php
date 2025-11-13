@@ -38,10 +38,10 @@ return new class extends Migration
             $table->unsignedInteger('timeout_seconds')->nullable();
             $table->unsignedInteger('http_timeout_seconds')->nullable();
             $table->unsignedInteger('last_attempt_duration_ms')->nullable();
-            $table->timestamp('retry_at')->nullable();
+            $table->timestamp('next_retry_at')->nullable();
             $table->timestamp('first_attempted_at')->nullable();
             $table->timestamp('last_attempted_at')->nullable();
-            $table->timestamp('processing_started_at')->nullable();
+            $table->timestamp('processing_at')->nullable();
             $table->timestamp('processing_finished_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('failed_at')->nullable();
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('status');
-            $table->index('retry_at');
+            $table->index('next_retry_at');
             $table->index('route_id');
             $table->index('route_identifier');
             $table->index('failed_at');

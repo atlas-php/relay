@@ -152,7 +152,7 @@ Learn more in [Atlas Relay PRD](./docs/PRD/PRD-Atlas-Relay.md).
 
 Retry logic applies to **AutoRoute** deliveries (typically outbound webhooks).
 
-* **Retry** – Failed deliveries reattempt after `retry_at`.
+* **Retry** – Failed deliveries reattempt after `next_retry_at`.
 * **Delay** – Postpones initial delivery.
 * **Timeout** – Fails relays exceeding configured duration.
 
@@ -176,7 +176,7 @@ All webhook activity — inbound and outbound — is fully logged:
 * Request metadata (source, headers)
 * Payload and response details
 * Retry attempts and failure causes
-* Processing duration and timestamps
+* Processing (`processing_at`) and completion (`completed_at`) timestamps
 
 Every relay becomes a searchable audit trail of webhook traffic.  
 For full schema and retention behavior, see [Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md).
@@ -188,7 +188,9 @@ For full schema and retention behavior, see [Archiving & Logging](./docs/PRD/PRD
 | Variable                   | Default | Description                              |
 |----------------------------|---------|------------------------------------------|
 | `ATLAS_RELAY_ARCHIVE_DAYS` | 30      | Days before relays move to archive.      |
-| `ATLAS_RELAY_PURGE_DAYS`   | 180     | Days before archived relays are deleted. |
+| `ATLAS_RELAY_PURGE_DAYS`   | 180     | Days before archived relays are deleted based on `archived_at`. |
+
+Archived rows mirror the live relay schema (including `processing_at`, `completed_at`, and `next_retry_at`) and append `archived_at`, which the purge automation uses to determine retention windows.
 
 ---
 

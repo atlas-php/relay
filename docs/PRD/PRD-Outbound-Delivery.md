@@ -73,7 +73,7 @@ Execution is controlled by relay-level fields:
 
 Rules:
 - Delays apply only to the first attempt.
-- Retries scheduled with `retry_at`.
+- Retries scheduled with `next_retry_at`.
 - Timeouts apply to total execution time.
 - Previous failure details cleared on retry.
 
@@ -117,7 +117,7 @@ All outbound attempts, responses, retries, timings, and failures are recorded di
 
 | Job                      | Frequency        | Description                                |
 |--------------------------|------------------|--------------------------------------------|
-| Retry Overdue Deliveries | Every minute     | Attempts relays past `retry_at`.           |
+| Retry Overdue Deliveries | Every minute     | Attempts relays past `next_retry_at`.      |
 | Requeue Stuck Jobs       | Every 10 minutes | Requeues relays in `Processing` too long.  |
 | Timeout Enforcement      | Hourly           | Marks long-running deliveries as `Failed`. |
 

@@ -33,10 +33,10 @@ use Illuminate\Database\Eloquent\Builder;
  * @property int|null $timeout_seconds
  * @property int|null $http_timeout_seconds
  * @property int|null $last_attempt_duration_ms
- * @property \Carbon\CarbonImmutable|null $retry_at
+ * @property \Carbon\CarbonImmutable|null $next_retry_at
  * @property \Carbon\CarbonImmutable|null $first_attempted_at
  * @property \Carbon\CarbonImmutable|null $last_attempted_at
- * @property \Carbon\CarbonImmutable|null $processing_started_at
+ * @property \Carbon\CarbonImmutable|null $processing_at
  * @property \Carbon\CarbonImmutable|null $processing_finished_at
  * @property \Carbon\CarbonImmutable|null $completed_at
  * @property \Carbon\CarbonImmutable|null $failed_at
@@ -70,10 +70,10 @@ class Relay extends AtlasModel
         'response_status' => 'integer',
         'failure_reason' => 'integer',
         'route_id' => 'integer',
-        'retry_at' => 'immutable_datetime',
+        'next_retry_at' => 'immutable_datetime',
         'first_attempted_at' => 'immutable_datetime',
         'last_attempted_at' => 'immutable_datetime',
-        'processing_started_at' => 'immutable_datetime',
+        'processing_at' => 'immutable_datetime',
         'processing_finished_at' => 'immutable_datetime',
         'completed_at' => 'immutable_datetime',
         'failed_at' => 'immutable_datetime',
@@ -92,8 +92,8 @@ class Relay extends AtlasModel
         return $query
             ->where('is_retry', true)
             ->whereNull('archived_at')
-            ->whereNotNull('retry_at')
-            ->where('retry_at', '<=', now());
+            ->whereNotNull('next_retry_at')
+            ->where('next_retry_at', '<=', now());
     }
 
     /**

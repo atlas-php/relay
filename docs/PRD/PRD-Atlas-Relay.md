@@ -130,7 +130,7 @@ Purging: 11 PM EST
 ## Automation Jobs
 | Job                  | Frequency    | Purpose                      |
 |----------------------|--------------|------------------------------|
-| Retry overdue        | Every min    | Retry relays past `retry_at` |
+| Retry overdue        | Every min    | Retry relays past `next_retry_at` |
 | Requeue stuck relays | Every 10 min | Requeue long‑running relays  |
 | Timeout enforcement  | Hourly       | Mark timed‑out relays failed |
 | Archiving            | Daily        | Move old relays              |
@@ -144,4 +144,3 @@ Purging: 11 PM EST
 - All payloads stored regardless of delivery result.
 - Malformed JSON stored as‑is with `INVALID_PAYLOAD`.
 - All operations must be idempotent.
-

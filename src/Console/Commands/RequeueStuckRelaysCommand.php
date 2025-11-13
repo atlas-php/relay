@@ -37,18 +37,20 @@ class RequeueStuckRelaysCommand extends Command
             ->where('status', RelayStatus::PROCESSING->value)
             ->whereNull('archived_at')
             ->where(function ($query) use ($cutoff): void {
-                $query->whereNull('processing_started_at')
-                    ->orWhere('processing_started_at', '<=', $cutoff);
+                $query->whereNull('processing_at')
+                    ->orWhere('processing_at', '<=', $cutoff);
             })
             ->orderBy('id')
             ->chunkById($chunkSize, function ($relays) use (&$count): void {
                 foreach ($relays as $relay) {
                     $relay->forceFill([
                         'status' => RelayStatus::QUEUED,
-                        'processing_started_at' => null,
+                        'processing_at' => null,
                         'processing_finished_at' => null,
                         'last_attempt_duration_ms' => null,
-                        'retry_at' => now(),
+                        'completed_at' => null,
+                        'failed_at' => null,
+                        'next_retry_at' => now(),
                     ])->save();
 
                     $count++;

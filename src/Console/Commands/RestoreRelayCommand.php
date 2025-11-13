@@ -40,8 +40,8 @@ class RestoreRelayCommand extends Command
 
         $attributes['status'] = RelayStatus::QUEUED;
         $attributes['failure_reason'] = null;
-        $attributes['retry_at'] = null;
-        $attributes['processing_started_at'] = null;
+        $attributes['next_retry_at'] = null;
+        $attributes['processing_at'] = null;
         $attributes['processing_finished_at'] = null;
         $attributes['completed_at'] = null;
         $attributes['failed_at'] = null;
