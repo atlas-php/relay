@@ -47,7 +47,7 @@ class HttpDeliveryTest extends TestCase
 
         $relay = $this->assertRelayInstance($builder->relay());
         $this->assertSame(RelayStatus::COMPLETED, $relay->status);
-        $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+        $this->assertSame(DestinationMethod::POST, $relay->method);
         $this->assertSame(200, $relay->response_http_status);
         $this->assertSame(['ok' => true], $relay->response_payload);
     }
@@ -64,8 +64,8 @@ class HttpDeliveryTest extends TestCase
 
         $this->assertInstanceOf(RelayModel::class, $relay);
         $this->assertSame(['payload' => true], $relay->payload);
-        $this->assertSame('https://example.com/relay', $relay->destination_url);
-        $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+        $this->assertSame('https://example.com/relay', $relay->url);
+        $this->assertSame(DestinationMethod::POST, $relay->method);
     }
 
     public function test_http_entrypoint_enforces_payload_limit(): void
@@ -93,7 +93,7 @@ class HttpDeliveryTest extends TestCase
         }
     }
 
-    public function test_http_delivery_records_destination_url_before_transport(): void
+    public function test_http_delivery_records_url_before_transport(): void
     {
         $builder = Relay::payload(['status' => 'queued']);
 
@@ -102,8 +102,8 @@ class HttpDeliveryTest extends TestCase
                 $relay = $this->assertRelayInstance($builder->relay());
                 $relay->refresh();
 
-                $this->assertSame('https://example.com/relay', $relay->destination_url);
-                $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+                $this->assertSame('https://example.com/relay', $relay->url);
+                $this->assertSame(DestinationMethod::POST, $relay->method);
 
                 return Http::response(['ok' => true], 200);
             },

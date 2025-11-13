@@ -28,8 +28,8 @@ class RelayContext
         public readonly array $validationErrors = [],
         public readonly ?int $routeId = null,
         public readonly ?string $routeIdentifier = null,
-        public readonly ?string $destinationMethod = null,
-        public readonly ?string $destinationUrl = null,
+        public readonly ?string $method = null,
+        public readonly ?string $url = null,
         public readonly array $headers = [],
     ) {}
 }

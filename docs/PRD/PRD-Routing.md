@@ -37,7 +37,7 @@ Inbound Relay → Route Lookup → Match Found → Delivery Target Selected → 
 | `method`                    | HTTP method                     |
 | `path`                      | Supports dynamic segments       |
 | `type`                      | `http`, `event`, `dispatch`     |
-| `destination_url`           | URL or handler reference        |
+| `url`                       | URL or handler reference        |
 | `headers`                   | JSON headers for HTTP           |
 | `retry_policy`              | JSON retry config               |
 | `timeout_seconds`           | Max execution duration          |
@@ -135,4 +135,3 @@ Captured → Queued → Processing → Completed/Failed/Cancelled → Archived
 - Should providers support multiple matches for fan‑out?
 - Should route resolution log matched payload attributes?
 - Should cached entries persist across deployments?
-

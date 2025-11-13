@@ -18,9 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
  * @property RelayStatus $status
  * @property string|null $mode
  * @property int|null $route_id
- * @property string|null $route_identifier
- * @property DestinationMethod|null $destination_method
- * @property string|null $destination_url
+ * @property DestinationMethod|null $method
+ * @property string|null $url
  * @property int|null $response_http_status
  * @property array<mixed>|string|null $response_payload
  * @property int|null $failure_reason
@@ -48,7 +47,7 @@ class Relay extends AtlasModel
         'payload' => 'array',
         'response_payload' => 'array',
         'status' => RelayStatus::class,
-        'destination_method' => DestinationMethod::class,
+        'method' => DestinationMethod::class,
         'is_retry' => 'boolean',
         'is_delay' => 'boolean',
         'retry_seconds' => 'integer',

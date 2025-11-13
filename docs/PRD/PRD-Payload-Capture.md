@@ -64,7 +64,8 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 | `timeout_seconds`      | Max relay execution time.                               |
 | `http_timeout_seconds` | Max outbound HTTP timeout.                              |
 | `next_retry_at`        | Next retry timestamp.                                   |
-| `destination_method`   | HTTP verb selected for delivery (`GET`, `POST`, etc.).  |
+| `method`               | HTTP verb captured for inbound/outbound delivery.       |
+| `url`                  | Normalized route or destination URL applied everywhere. |
 | `processing_at`        | When the current attempt began processing.              |
 | `completed_at`         | When the relay finished (success, failure, or cancel).  |
 | `created_at`           | Capture timestamp.                                      |

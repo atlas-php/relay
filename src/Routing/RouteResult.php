@@ -20,8 +20,8 @@ class RouteResult
         public readonly ?int $id,
         public readonly ?string $identifier,
         public readonly string $type,
-        public readonly string $destinationUrl,
-        public readonly ?string $destinationMethod = null,
+        public readonly string $url,
+        public readonly ?string $method = null,
         public readonly array $headers = [],
         public readonly array $lifecycle = [],
         public readonly array $parameters = []
@@ -36,8 +36,8 @@ class RouteResult
             id: (int) $route->getAttribute('id'),
             identifier: $route->getAttribute('identifier'),
             type: $route->getAttribute('type'),
-            destinationUrl: $route->getAttribute('destination_url'),
-            destinationMethod: $route->getAttribute('method'),
+            url: $route->getAttribute('url'),
+            method: $route->getAttribute('method'),
             headers: $route->getAttribute('headers') ?? [],
             lifecycle: [
                 'is_retry' => (bool) $route->getAttribute('is_retry'),
@@ -61,8 +61,8 @@ class RouteResult
             'id' => $this->id,
             'identifier' => $this->identifier,
             'type' => $this->type,
-            'destination_url' => $this->destinationUrl,
-            'destination_method' => $this->destinationMethod,
+            'url' => $this->url,
+            'method' => $this->method,
             'headers' => $this->headers,
             'lifecycle' => $this->lifecycle,
             'parameters' => $this->parameters,
@@ -74,12 +74,18 @@ class RouteResult
      */
     public static function fromArray(array $data): self
     {
+        $url = $data['url'] ?? $data['destination_url'] ?? null;
+
+        if (! is_string($url)) {
+            throw new \InvalidArgumentException('RouteResult array data must include a url.');
+        }
+
         return new self(
             id: $data['id'] ?? null,
             identifier: $data['identifier'] ?? null,
             type: $data['type'],
-            destinationUrl: $data['destination_url'],
-            destinationMethod: $data['destination_method'] ?? null,
+            url: $url,
+            method: $data['method'] ?? $data['destination_method'] ?? null,
             headers: $data['headers'] ?? [],
             lifecycle: $data['lifecycle'] ?? [],
             parameters: $data['parameters'] ?? []

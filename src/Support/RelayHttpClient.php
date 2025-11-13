@@ -83,7 +83,7 @@ class RelayHttpClient
     private function send(string $method, ...$arguments): Response
     {
         $url = $arguments[0] ?? null;
-        $destinationMethod = DestinationMethod::tryFromMixed($method);
+        $resolvedMethod = DestinationMethod::tryFromMixed($method);
 
         $this->recordPendingHeaders();
         $relay = $this->relay();
@@ -96,7 +96,7 @@ class RelayHttpClient
                 );
             }
 
-            if ($destinationMethod === null) {
+            if ($resolvedMethod === null) {
                 $this->reportInvalidMethod($relay, $method);
 
                 throw new RelayHttpException(
@@ -107,7 +107,7 @@ class RelayHttpClient
 
             $this->assertHttps($url);
             $this->registerPayloadFromArguments($relay, $arguments);
-            $this->registerDestination($relay, $url, $destinationMethod);
+            $this->registerDestination($relay, $url, $resolvedMethod);
         } catch (RelayHttpException $exception) {
             $failure = $exception->failure() ?? RelayFailure::OUTBOUND_HTTP_ERROR;
 
@@ -428,19 +428,19 @@ class RelayHttpClient
 
         if (strlen($url) > $maxLength) {
             throw new RelayHttpException(
-                sprintf('Destination URL may not exceed %d characters; received %d.', $maxLength, strlen($url)),
+                sprintf('URL may not exceed %d characters; received %d.', $maxLength, strlen($url)),
                 RelayFailure::OUTBOUND_HTTP_ERROR
             );
         }
 
         $attributes = [];
 
-        if ($relay->destination_url !== $url) {
-            $attributes['destination_url'] = $url;
+        if ($relay->url !== $url) {
+            $attributes['url'] = $url;
         }
 
-        if ($relay->destination_method?->value !== $method->value) {
-            $attributes['destination_method'] = $method;
+        if ($relay->method?->value !== $method->value) {
+            $attributes['method'] = $method;
         }
 
         if ($attributes === []) {

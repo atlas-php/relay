@@ -31,7 +31,7 @@ class DxCommandsTest extends TestCase
                 'method' => 'POST',
                 'path' => '/orders',
                 'type' => 'http',
-                'destination_url' => 'https://example.com/orders',
+                'url' => 'https://example.com/orders',
             ],
         ]);
 

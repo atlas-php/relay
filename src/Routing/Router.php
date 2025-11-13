@@ -148,7 +148,8 @@ class Router
                 'id' => (int) $route->getAttribute('id'),
                 'identifier' => $route->getAttribute('identifier'),
                 'type' => $route->getAttribute('type'),
-                'destination_url' => $route->getAttribute('destination_url'),
+                'method' => $route->getAttribute('method'),
+                'url' => $route->getAttribute('url'),
                 'headers' => $route->getAttribute('headers') ?? [],
                 'lifecycle' => [
                     'is_retry' => (bool) $route->getAttribute('is_retry'),

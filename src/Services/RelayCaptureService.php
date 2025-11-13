@@ -72,17 +72,17 @@ class RelayCaptureService
             );
         }
 
-        $destinationUrl = $context->destinationUrl;
+        $url = $context->url ?? $context->request?->fullUrl();
 
-        if ($destinationUrl !== null) {
-            $length = strlen($destinationUrl);
+        if ($url !== null) {
+            $length = strlen($url);
 
             if ($length > 255) {
                 throw InvalidDestinationUrlException::exceedsMaxLength($length);
             }
         }
 
-        $destinationMethod = $this->determineDestinationMethod($context);
+        $method = $this->determineMethod($context);
 
         $attributes = array_merge($this->defaultLifecycleConfig(), $context->lifecycle);
         $attributes = array_merge($attributes, [
@@ -95,9 +95,8 @@ class RelayCaptureService
             'response_payload' => null,
             'attempt_count' => Arr::get($context->lifecycle, 'attempt_count', 0),
             'route_id' => $context->routeId,
-            'route_identifier' => $context->routeIdentifier,
-            'destination_method' => $destinationMethod?->value,
-            'destination_url' => $destinationUrl,
+            'method' => $method?->value,
+            'url' => $url,
         ]);
 
         if ($validationErrors !== []) {
@@ -190,9 +189,9 @@ class RelayCaptureService
         return $request?->ip();
     }
 
-    private function determineDestinationMethod(RelayContext $context): ?DestinationMethod
+    private function determineMethod(RelayContext $context): ?DestinationMethod
     {
-        $candidate = $context->destinationMethod ?? $context->request?->getMethod();
+        $candidate = $context->method ?? $context->request?->getMethod();
 
         if ($candidate === null) {
             return null;
@@ -201,7 +200,7 @@ class RelayCaptureService
         $method = DestinationMethod::tryFromMixed($candidate);
 
         if ($method === null) {
-            $this->reportInvalidDestinationMethod($candidate, $context);
+            $this->reportInvalidMethod($candidate, $context);
         }
 
         return $method;
@@ -215,18 +214,16 @@ class RelayCaptureService
     {
         Log::warning('atlas-relay:validation', [
             'route_id' => $attributes['route_id'] ?? null,
-            'route_identifier' => $attributes['route_identifier'] ?? null,
             'mode' => $attributes['mode'] ?? null,
             'errors' => $validationErrors,
         ]);
     }
 
-    private function reportInvalidDestinationMethod(string $method, RelayContext $context): void
+    private function reportInvalidMethod(string $method, RelayContext $context): void
     {
-        Log::warning('atlas-relay:destination-method-invalid', [
+        Log::warning('atlas-relay:method-invalid', [
             'provided' => $method,
             'route_id' => $context->routeId,
-            'route_identifier' => $context->routeIdentifier,
             'allowed' => DestinationMethod::values(),
         ]);
     }

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $method
  * @property string $path
  * @property string $type
- * @property string $destination_url
+ * @property string $url
  * @property array<string, mixed>|null $headers
  * @property bool $enabled
  */

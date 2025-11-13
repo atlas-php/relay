@@ -43,7 +43,7 @@ class AutoRoutingTest extends TestCase
 
         $this->assertSame($route->id, $relay->route_id);
         $this->assertSame('auto_route', $relay->mode);
-        $this->assertSame(DestinationMethod::POST, $relay->destination_method);
+        $this->assertSame(DestinationMethod::POST, $relay->method);
         $this->assertTrue($relay->is_retry);
         $this->assertSame(90, $relay->retry_seconds);
         $this->assertTrue($relay->is_delay);
@@ -54,7 +54,7 @@ class AutoRoutingTest extends TestCase
     {
         $this->createRoute([
             'path' => '/leads/{LEAD_ID:int}',
-            'destination_url' => 'https://example.com/leads',
+            'url' => 'https://example.com/leads',
         ]);
 
         $relay = $this->assertRelayInstance(
@@ -70,13 +70,13 @@ class AutoRoutingTest extends TestCase
         $dynamic = $this->createRoute([
             'identifier' => 'wildcard',
             'path' => '/{slug}',
-            'destination_url' => 'https://example.com/wildcard',
+            'url' => 'https://example.com/wildcard',
         ]);
 
         $static = $this->createRoute([
             'identifier' => 'orders-static',
             'path' => '/orders',
-            'destination_url' => 'https://example.com/orders-static',
+            'url' => 'https://example.com/orders-static',
         ]);
 
         $relay = $this->assertRelayInstance(
@@ -86,7 +86,7 @@ class AutoRoutingTest extends TestCase
         );
 
         $this->assertSame($dynamic->id, $relay->route_id);
-        $this->assertSame('https://example.com/wildcard', $relay->destination_url);
+        $this->assertSame('https://example.com/wildcard', $relay->url);
 
     }
 
@@ -96,7 +96,7 @@ class AutoRoutingTest extends TestCase
         $router = app(Router::class);
         $provider = new class implements RoutingProviderInterface
         {
-            public string $destinationUrl = 'https://provider.test/one';
+            public string $url = 'https://provider.test/one';
 
             public bool $shouldCache = true;
 
@@ -110,7 +110,7 @@ class AutoRoutingTest extends TestCase
                     id: null,
                     identifier: 'provider',
                     type: 'http',
-                    destinationUrl: $this->destinationUrl,
+                    url: $this->url,
                     headers: ['X-Provider' => 'yes']
                 );
             }
@@ -131,18 +131,18 @@ class AutoRoutingTest extends TestCase
         $request = Request::create('/anything', 'POST');
         $relay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
         $this->assertNull($relay->route_id);
-        $this->assertSame('https://provider.test/one', $relay->destination_url);
+        $this->assertSame('https://provider.test/one', $relay->url);
 
-        $provider->destinationUrl = 'https://provider.test/two';
+        $provider->url = 'https://provider.test/two';
         $cachedRelay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
-        $this->assertSame('https://provider.test/one', $cachedRelay->destination_url);
+        $this->assertSame('https://provider.test/one', $cachedRelay->url);
 
         $router->flushCache();
         $refreshedRelay = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
-        $this->assertSame('https://provider.test/two', $refreshedRelay->destination_url);
+        $this->assertSame('https://provider.test/two', $refreshedRelay->url);
     }
 
-    public function test_invalid_destination_method_is_reported(): void
+    public function test_invalid_method_is_reported(): void
     {
         /** @var Router $router */
         $router = app(Router::class);
@@ -158,8 +158,8 @@ class AutoRoutingTest extends TestCase
                     id: null,
                     identifier: 'invalid-method',
                     type: 'http',
-                    destinationUrl: 'https://example.com/invalid',
-                    destinationMethod: 'TRACE'
+                    url: 'https://example.com/invalid',
+                    method: 'TRACE'
                 );
             }
 
@@ -180,25 +180,25 @@ class AutoRoutingTest extends TestCase
                 ->relay()
         );
 
-        $this->assertNull($relay->destination_method);
+        $this->assertNull($relay->method);
     }
 
     public function test_route_cache_is_invalidated_when_route_changes(): void
     {
         $route = $this->createRoute([
             'path' => '/cache-test',
-            'destination_url' => 'https://example.com/one',
+            'url' => 'https://example.com/one',
         ]);
 
         $request = Request::create('/cache-test', 'POST');
         $first = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
-        $this->assertSame('https://example.com/one', $first->destination_url);
+        $this->assertSame('https://example.com/one', $first->url);
 
-        $route->destination_url = 'https://example.com/two';
+        $route->url = 'https://example.com/two';
         $route->save();
 
         $second = $this->assertRelayInstance(Relay::request($request)->dispatchAutoRoute()->relay());
-        $this->assertSame('https://example.com/two', $second->destination_url);
+        $this->assertSame('https://example.com/two', $second->url);
     }
 
     public function test_disabled_route_sets_failure_reason(): void
@@ -222,7 +222,7 @@ class AutoRoutingTest extends TestCase
         $this->createRoute([
             'identifier' => 'wildcard-disabled',
             'path' => '/{slug}',
-            'destination_url' => 'https://example.com/wildcard-disabled',
+            'url' => 'https://example.com/wildcard-disabled',
             'enabled' => false,
         ]);
 
@@ -236,10 +236,10 @@ class AutoRoutingTest extends TestCase
         $this->assertSame(RelayFailure::ROUTE_DISABLED->value, $relay->failure_reason);
     }
 
-    public function test_destination_url_longer_than_supported_limit_throws_exception(): void
+    public function test_url_longer_than_supported_limit_throws_exception(): void
     {
         $this->createRoute([
-            'destination_url' => 'https://example.com/'.str_repeat('a', 240),
+            'url' => 'https://example.com/'.str_repeat('a', 240),
         ]);
 
         $this->expectException(InvalidDestinationUrlException::class);
@@ -339,7 +339,7 @@ class AutoRoutingTest extends TestCase
             'method' => 'POST',
             'path' => '/orders',
             'type' => 'http',
-            'destination_url' => 'https://example.com/orders',
+            'url' => 'https://example.com/orders',
             'headers' => [],
             'retry_policy' => null,
             'is_retry' => true,

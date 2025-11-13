@@ -21,7 +21,7 @@ class RelayArchive extends AtlasModel
         'payload' => 'array',
         'response_payload' => 'array',
         'status' => RelayStatus::class,
-        'destination_method' => DestinationMethod::class,
+        'method' => DestinationMethod::class,
         'is_retry' => 'boolean',
         'is_delay' => 'boolean',
         'retry_seconds' => 'integer',

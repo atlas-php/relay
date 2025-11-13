@@ -22,9 +22,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('status')->default(RelayStatus::QUEUED->value);
             $table->string('mode', 32)->nullable();
             $table->unsignedBigInteger('route_id')->nullable();
-            $table->string('route_identifier')->nullable();
-            $table->string('destination_method', 16)->nullable();
-            $table->string('destination_url')->nullable();
+            $table->string('method', 16)->nullable();
+            $table->string('url')->nullable();
             $table->unsignedSmallInteger('response_http_status')->nullable();
             $table->json('response_payload')->nullable();
             $table->unsignedSmallInteger('failure_reason')->nullable();
@@ -44,7 +43,6 @@ return new class extends Migration
             $table->index('status');
             $table->index('next_retry_at');
             $table->index('route_id');
-            $table->index('route_identifier');
         });
     }
 

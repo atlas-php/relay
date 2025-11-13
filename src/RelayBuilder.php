@@ -53,7 +53,9 @@ class RelayBuilder
 
     private RequestPayloadExtractor $payloadExtractor;
 
-    private ?string $destinationMethod = null;
+    private ?string $resolvedMethod = null;
+
+    private ?string $resolvedUrl = null;
 
     public function __construct(
         private readonly RelayCaptureService $captureService,
@@ -187,8 +189,10 @@ class RelayBuilder
      */
     public function context(): RelayContext
     {
-        $capturedMethod = $this->destinationMethod
+        $capturedMethod = $this->resolvedMethod
             ?? DestinationMethod::tryFromMixed($this->request?->getMethod())?->value;
+
+        $capturedUrl = $this->resolvedUrl ?? $this->request?->fullUrl();
 
         return new RelayContext(
             $this->request,
@@ -201,7 +205,7 @@ class RelayBuilder
             $this->routeResult?->id,
             $this->routeResult?->identifier,
             $capturedMethod,
-            $this->routeResult?->destinationUrl,
+            $capturedUrl,
             $this->resolvedHeaders()
         );
     }
@@ -260,7 +264,8 @@ class RelayBuilder
 
     private function handleAutoRoute(string $mode): self
     {
-        $this->destinationMethod = null;
+        $this->resolvedMethod = null;
+        $this->resolvedUrl = null;
 
         try {
             $routeResult = $this->router->resolve($this->buildRouteContext());
@@ -281,7 +286,8 @@ class RelayBuilder
     private function applyRouteResult(RouteResult $route): void
     {
         $this->routeResult = $route;
-        $this->destinationMethod = $route->destinationMethod;
+        $this->resolvedMethod = $route->method;
+        $this->resolvedUrl = $route->url;
 
         $this->mergeLifecycleDefaults($route->lifecycle);
         $this->mergeHeaders($route->headers, false);
