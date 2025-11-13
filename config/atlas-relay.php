@@ -48,11 +48,6 @@ return [
     ],
 
     'automation' => [
-        'retry_overdue_cron' => env('ATLAS_RELAY_RETRY_CRON', '*/1 * * * *'),
-        'stuck_requeue_cron' => env('ATLAS_RELAY_STUCK_CRON', '*/10 * * * *'),
-        'timeout_enforcement_cron' => env('ATLAS_RELAY_TIMEOUT_CRON', '0 * * * *'),
-        'archive_cron' => env('ATLAS_RELAY_ARCHIVE_CRON', '0 22 * * *'),
-        'purge_cron' => env('ATLAS_RELAY_PURGE_CRON', '0 23 * * *'),
         'stuck_threshold_minutes' => env('ATLAS_RELAY_STUCK_THRESHOLD_MINUTES', 10),
         'timeout_buffer_seconds' => env('ATLAS_RELAY_TIMEOUT_BUFFER_SECONDS', 0),
     ],

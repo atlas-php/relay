@@ -110,7 +110,6 @@ HTTP deliveries merge headers in this order: inbound request snapshot (when usin
 | Component | Key Methods | Notes |
 | --- | --- | --- |
 | `RelayHttpClient` | Dynamic HTTP verbs (`get`, `post`, etc.) plus pass-through to `PendingRequest` configurators (e.g. `withHeaders`, `timeout`) | Enforces HTTPS (unless disabled), redirect host pinning, payload truncation, and lifecycle updates. |
-| `RelayScheduler::register(Schedule $schedule)` | Registers retry, stuck, timeout, archive, and purge commands with cron expressions sourced from `atlas-relay.automation.*`. |
 | `RelayJobMiddleware` | `handle(object $job, Closure $next)` | Add to custom jobs to automatically start/stop lifecycle attempts. |
 | `RelayJobContext` | `set()`, `current()`, `clear()` | Scoped helper resolved via the container to expose the active relay to downstream code. |
 | `RelayJobHelper` | `relay()`, `fail(RelayFailure $failure, string $message = '', array $attributes = [])` | Resolve via container inside jobs for convenience APIs. |
@@ -157,7 +156,19 @@ All models inherit from `AtlasModel`, which reads the target table names from co
 | `atlas-relay:relay:inspect {id}` | Prints the JSON state for a live or archived relay. |
 | `atlas-relay:routes:seed path.json` | Bulk seeds relay routes from a JSON definition file. |
 
-Tie these commands into Laravel’s scheduler via `RelayScheduler::register($schedule)` or run them manually.
+Register the recurring commands inside `routes/console.php` using Laravel’s scheduling helpers:
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('atlas-relay:retry-overdue')->everyMinute();
+Schedule::command('atlas-relay:requeue-stuck')->everyTenMinutes();
+Schedule::command('atlas-relay:enforce-timeouts')->hourly();
+Schedule::command('atlas-relay:archive')->dailyAt('22:00');
+Schedule::command('atlas-relay:purge-archives')->dailyAt('23:00');
+```
+
+Adjust the cadence as needed for your environment or run the commands manually.
 
 ---
 
@@ -172,7 +183,7 @@ Tie these commands into Laravel’s scheduler via `RelayScheduler::register($sch
 | `routing.cache_ttl_seconds`, `routing.cache_store` | Router cache behaviour. |
 | `http.max_response_bytes`, `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
 | `archiving.archive_after_days`, `archiving.purge_after_days`, `archiving.chunk_size` | Archiving cadence and chunk sizing. |
-| `automation.*` (`retry_overdue_cron`, `stuck_requeue_cron`, `timeout_enforcement_cron`, `archive_cron`, `purge_cron`, `stuck_threshold_minutes`, `timeout_buffer_seconds`) | Scheduler expressions + safety buffers. |
+| `automation.stuck_threshold_minutes`, `automation.timeout_buffer_seconds` | Controls when "requeue stuck" and "enforce timeouts" consider a relay overdue. |
 
 ---
 
