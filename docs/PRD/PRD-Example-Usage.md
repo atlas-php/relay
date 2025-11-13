@@ -21,8 +21,8 @@ See also (technical foundations): `PRD-Payload-Capture.md`, `PRD-Routing.md`, `P
 ```php
 use Atlas\Relay\Facades\Relay;
 
-$pending = Relay::payload($payload)
-    ->dispatch(new ExampleJob($payload));   // <-- thin wrapper over Laravel dispatch
+$pending = Relay::request($request)
+    ->dispatch(new ExampleJob($request->all()));   // <-- thin wrapper over Laravel dispatch
 
 // $pending is Laravel\Foundation\Bus\PendingDispatch (same as ExampleJob::dispatch())
 $pending->onQueue('critical')
@@ -40,8 +40,8 @@ $pending->onQueue('critical')
 ## 2) Synchronous Dispatch via Atlas
 
 ```php
-Relay::payload($payload)
-    ->dispatchSync(new ExampleJob($payload));   // thin wrapper over dispatchSync()
+Relay::request($request)
+    ->dispatchSync(new ExampleJob($request->all()));   // thin wrapper over dispatchSync()
 ```
 
 **Behavior**
@@ -71,7 +71,7 @@ class ExampleJob implements ShouldQueue
 }
 
 // Call site (returns native PendingDispatch):
-Relay::payload($payload)->dispatch(new ExampleJob($payload))->onQueue('default');
+Relay::request($request)->dispatch(new ExampleJob($request->all()))->onQueue('default');
 ```
 
 **Behavior**
@@ -84,7 +84,7 @@ Relay::payload($payload)->dispatch(new ExampleJob($payload))->onQueue('default')
 ```php
 use Illuminate\Support\Facades\Bus;
 
-Relay::payload($payload)
+Relay::request($request)
     ->dispatchChain([                 // thin wrapper that proxies to Bus::chain(...)->dispatch()
         new PrepareDataJob($payload),
         new DeliverToPartnerJob(),
@@ -128,7 +128,7 @@ Relay::http()
 **Behavior**
 - Delegates to Laravel’s `Http` under the hood; **all client features** available.
 - Atlas intercepts first, records payload/method/URL plus `response_http_status`/`response_payload`, then returns the response.
-- Need lifecycle overrides before HTTP? You can still seed a builder via `Relay::payload($data)` (or `Relay::request()`), configure it, and then call `->http()` as before.
+- Need lifecycle overrides before HTTP? Start from `Relay::request($request)` (or, if there is no HTTP request, `Relay::payload($data)`), configure it, and then call `->http()` as before.
 
 ---
 

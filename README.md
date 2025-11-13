@@ -70,7 +70,7 @@ Relay::http()->withHeaders([
     'X-API-KEY' => '1234567890'
 ])->post('https://api.example.com/webhooks', $payload);
 ```
-You can use the Laravel `http()` methods you're most likely already using. (See [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)).
+You can use the Laravel `http()` methods you're most likely already using. When you start from `Relay::request($request)`, inbound headers are copied automatically—just call `->setHeaders()` on that builder before `->http()` if you need to merge your own values. (See [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)).
 
 ---
 
@@ -86,18 +86,6 @@ $response = Relay::request($request)->autoRouteImmediately();
 ```
 Performs immediate inbound-to-outbound delivery, returning the response inline with the captured payload.  
 (Relates to [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md))
-
----
-
-### Mode Cheat Sheet
-
-| Mode         | Entry Point                             | Notes                                                                                                                                 |
-|--------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| HTTP         | `Relay::http()`                         | Returns an `Atlas\Relay\Support\RelayHttpClient` wrapper that proxies `PendingRequest` configuration while applying relay safeguards. |
-| Event        | `Relay::request()->event()`             | Executes sync callbacks/listeners and updates lifecycle before bubbling exceptions.                                                   |
-| Dispatch     | `Relay::payload()->dispatch()`          | Returns native `PendingDispatch`; job middleware records success/failure.                                                             |
-| DispatchSync | `Relay::payload()->dispatchSync()`      | Runs immediately in-process with lifecycle tracking.                                                                                  |
-| Auto-Route   | `Relay::request()->dispatchAutoRoute()` | Resolves routes, copies delivery defaults, and persists before delivery.                                                              |
 
 ---
 
@@ -173,22 +161,7 @@ Archived rows mirror the live relay schema (including `processing_at`, `complete
 | Archiving            | Daily (10 PM)    | Moves completed relays to archive.   |
 | Purging              | Daily (11 PM)    | Removes expired archive data.        |
 
-### Scheduling
-
-Register the automation cadence inside your `Console\Kernel`:
-
-```php
-use Atlas\Relay\Support\RelayScheduler;
-
-protected function schedule(Schedule $schedule): void
-{
-    RelayScheduler::register($schedule);
-}
-```
-
-Cron expressions and thresholds can be overridden via the `atlas-relay.automation` config options published with the package.
-
-See [Atlas Relay PRD](./docs/PRD/PRD-Atlas-Relay.md) for complete job automation details.
+Register these jobs through `RelayScheduler` inside your console kernel (see [`docs/Install.md`](./docs/Install.md)) and adjust cadence via the `atlas-relay.automation` config map. See [Atlas Relay PRD](./docs/PRD/PRD-Atlas-Relay.md) for complete automation details.
 
 ---
 

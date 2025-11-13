@@ -57,11 +57,3 @@ protected function schedule(Schedule $schedule): void
     RelayScheduler::register($schedule);
 }
 ```
-
-## 7. Confirm Installation
-
-* Run `php artisan migrate --pretend` to ensure migrations target the expected connection.
-* Execute `php artisan schedule:list` to verify `RelayScheduler` jobs appear.
-* Optionally call `Relay::request($request)->capture()` within tinker to confirm records persist.
-
-With these steps complete, Atlas Relay is ready for payload capture, routing, and outbound delivery.
