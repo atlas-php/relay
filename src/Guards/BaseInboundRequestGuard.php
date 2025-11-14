@@ -12,7 +12,12 @@ use Atlas\Relay\Support\InboundRequestGuardContext;
  */
 abstract class BaseInboundRequestGuard implements InboundRequestGuardInterface
 {
-    public function captureFailures(): bool
+    public function captureHeaderFailure(): bool
+    {
+        return true;
+    }
+
+    public function capturePayloadFailure(): bool
     {
         return true;
     }

@@ -12,10 +12,14 @@ use Atlas\Relay\Support\InboundRequestGuardContext;
 interface InboundRequestGuardInterface
 {
     /**
-     * Return true (default) to persist the webhook as a failed relay when validation fails;
-     * return false to reject the request without capturing anything.
+     * Return true (default) to persist relays when header validation fails; false skips capture.
      */
-    public function captureFailures(): bool;
+    public function captureHeaderFailure(): bool;
+
+    /**
+     * Return true (default) to persist relays when payload validation fails; false skips capture.
+     */
+    public function capturePayloadFailure(): bool;
 
     /**
      * Validate inbound requests using the provided context helpers and throw guard exceptions on failure.

@@ -26,7 +26,8 @@ class InboundRequestGuardContext
         private readonly array $headers,
         private readonly mixed $payload,
         private readonly string $guardName,
-        private readonly ?Relay $relay = null
+        private ?Relay $relay = null,
+        private readonly ?\Closure $relayResolver = null
     ) {
         $this->headerLookup = $this->normalizeHeaderLookup($headers);
     }
@@ -70,10 +71,22 @@ class InboundRequestGuardContext
     }
 
     /**
-     * Relay model captured prior to guard execution when captureFailures() is true.
+     * Relay model captured prior to guard execution when the guard opts into capturing failures.
      */
     public function relay(): ?Relay
     {
+        if ($this->relay instanceof Relay) {
+            return $this->relay;
+        }
+
+        if ($this->relayResolver instanceof \Closure) {
+            $resolved = ($this->relayResolver)();
+
+            if ($resolved instanceof Relay) {
+                $this->relay = $resolved;
+            }
+        }
+
         return $this->relay;
     }
 

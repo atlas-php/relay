@@ -20,7 +20,9 @@ class FakeInboundRequestGuard extends BaseInboundRequestGuard
 
     public static string $mode = self::MODE_NONE;
 
-    public static bool $captureFailures = true;
+    public static bool $captureHeaderFailures = true;
+
+    public static bool $capturePayloadFailures = true;
 
     public static ?string $expectedSignature = null;
 
@@ -30,21 +32,27 @@ class FakeInboundRequestGuard extends BaseInboundRequestGuard
     public static function reset(): void
     {
         self::$mode = self::MODE_NONE;
-        self::$captureFailures = true;
+        self::$captureHeaderFailures = true;
+        self::$capturePayloadFailures = true;
         self::$expectedSignature = null;
         self::$captures = [];
     }
 
-    public function captureFailures(): bool
+    public function captureHeaderFailure(): bool
     {
-        return self::$captureFailures;
+        return self::$captureHeaderFailures;
+    }
+
+    public function capturePayloadFailure(): bool
+    {
+        return self::$capturePayloadFailures;
     }
 
     public function validate(InboundRequestGuardContext $context): void
     {
         self::$captures[] = [
             'phase' => 'headers',
-            'relay_id' => $context->relay()?->id,
+            'relay_id' => self::$captureHeaderFailures ? $context->relay()?->id : null,
         ];
 
         if (self::$expectedSignature !== null) {
@@ -59,7 +67,7 @@ class FakeInboundRequestGuard extends BaseInboundRequestGuard
 
         self::$captures[] = [
             'phase' => 'payload',
-            'relay_id' => $context->relay()?->id,
+            'relay_id' => self::$capturePayloadFailures ? $context->relay()?->id : null,
         ];
 
         if (self::$mode === self::MODE_PAYLOAD) {

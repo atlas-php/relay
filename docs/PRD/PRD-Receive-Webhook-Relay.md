@@ -60,7 +60,7 @@ Inbound guards are authored as plain PHP classes and registered inline via `guar
 - `$context->requireHeader('X-Key', env('WEBHOOK_KEY'))` checks for required headers and compares them against secrets without writing custom exception logic.
 - `$context->validateHeaders([...])` and `$context->validatePayload([...])` run Laravel's Validator (including dot-notation rules such as `event.order.id`) against headers/payload arrays. Validation exceptions are converted to `InvalidWebhookHeadersException` or `InvalidWebhookPayloadException` automatically.
 - Call `$context->failHeaders([...])` or `$context->failPayload([...])` when you want to short-circuit with your own error messages.
-- `captureFailures()` controls whether a failing guard should persist the webhook attempt. The default is `true`, meaning the webhook is recorded as failed (using `RelayFailure::INVALID_GUARD_HEADERS` or `INVALID_GUARD_PAYLOAD`). Returning `false` skips capture entirely for blocked attempts.
+- `captureHeaderFailure()` and `capturePayloadFailure()` let guards decide which failures should persist relays. Each method defaults to `true`, recording the webhook as failed for that validation path. Return `false` to reject without storing anything for that failure type.
 
 ### Example guard class
 ```php
@@ -84,9 +84,14 @@ class StripeWebhookGuard extends BaseInboundRequestGuard
         ]);
     }
 
-    public function captureFailures(): bool
+    public function captureHeaderFailure(): bool
     {
-        return true; // capture failed attempts as relays; return false to reject without storing
+        return true; // capture header failures
+    }
+
+    public function capturePayloadFailure(): bool
+    {
+        return true; // capture payload failures
     }
 }
 ```
@@ -119,4 +124,4 @@ public function __invoke(Request $request)
 - Payloads are truncated when `atlas-relay.payload_max_bytes` is exceeded and the relay is marked `PAYLOAD_TOO_LARGE`.
 - Sensitive headers are masked according to `atlas-relay.sensitive_headers`.
 - Destination URLs longer than 255 characters are rejected with `InvalidDestinationUrlException`.
-- When guards opt-in via `captureFailures()`, relays are stored even when validation fails, ensuring auditability.
+- When guards opt-in via `captureHeaderFailure()` or `capturePayloadFailure()`, relays are stored even when validation fails, ensuring auditability.

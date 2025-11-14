@@ -279,19 +279,34 @@ class RelayBuilder
             return;
         }
 
-        $relay = $guard->captureFailures() ? $this->ensureRelayCaptured() : null;
+        $relayCaptured = null;
+        $relayResolver = null;
+
+        if ($guard->captureHeaderFailure() || $guard->capturePayloadFailure()) {
+            $relayResolver = function () use (&$relayCaptured): Relay {
+                if ($relayCaptured instanceof Relay) {
+                    return $relayCaptured;
+                }
+
+                $relayCaptured = $this->ensureRelayCaptured();
+
+                return $relayCaptured;
+            };
+        }
+
         $context = new InboundRequestGuardContext(
             $request,
             $this->resolvedHeaders(),
             $this->payload,
             $this->guardDisplayName($guard),
-            $relay
+            null,
+            $relayResolver
         );
 
         try {
             $this->guardService->validate($guard, $context);
         } catch (InvalidWebhookHeadersException|InvalidWebhookPayloadException $exception) {
-            $this->handleGuardFailure($exception, $guard, $relay);
+            $this->handleGuardFailure($exception, $guard, $context);
 
             throw $exception;
         }
@@ -339,9 +354,19 @@ class RelayBuilder
     private function handleGuardFailure(
         Throwable $exception,
         InboundRequestGuardInterface $guard,
-        ?Relay $relay
+        InboundRequestGuardContext $context
     ): void {
-        if (! $guard->captureFailures() || ! $relay instanceof Relay) {
+        $shouldCapture = $exception instanceof InvalidWebhookPayloadException
+            ? $guard->capturePayloadFailure()
+            : $guard->captureHeaderFailure();
+
+        if (! $shouldCapture) {
+            return;
+        }
+
+        $relay = $context->relay();
+
+        if (! $relay instanceof Relay) {
             return;
         }
 

@@ -29,7 +29,8 @@ class InboundGuardTest extends TestCase
     public function test_guard_records_header_failure_when_capture_enabled(): void
     {
         FakeInboundRequestGuard::$mode = FakeInboundRequestGuard::MODE_HEADERS;
-        FakeInboundRequestGuard::$captureFailures = true;
+        FakeInboundRequestGuard::$captureHeaderFailures = true;
+        FakeInboundRequestGuard::$capturePayloadFailures = true;
 
         $request = HttpRequest::create('/relay', 'POST');
 
@@ -58,7 +59,8 @@ class InboundGuardTest extends TestCase
     public function test_capture_skipped_when_guard_capture_disabled(): void
     {
         FakeInboundRequestGuard::$mode = FakeInboundRequestGuard::MODE_HEADERS;
-        FakeInboundRequestGuard::$captureFailures = false;
+        FakeInboundRequestGuard::$captureHeaderFailures = false;
+        FakeInboundRequestGuard::$capturePayloadFailures = true;
 
         $request = HttpRequest::create('/relay', 'POST');
 
@@ -79,7 +81,8 @@ class InboundGuardTest extends TestCase
     public function test_guard_can_raise_payload_errors(): void
     {
         FakeInboundRequestGuard::$mode = FakeInboundRequestGuard::MODE_PAYLOAD;
-        FakeInboundRequestGuard::$captureFailures = true;
+        FakeInboundRequestGuard::$captureHeaderFailures = true;
+        FakeInboundRequestGuard::$capturePayloadFailures = true;
 
         $request = HttpRequest::create('/relay', 'POST');
 

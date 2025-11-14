@@ -58,7 +58,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `relay(): ?Relay` | Returns the last persisted relay instance without re-capturing. |
 | `context(): RelayContext` | Exposes the immutable capture payload (useful for tests). |
 
-> **Inbound Guards:** Call `guard(YourGuard::class)` to run inline guard classes that implement `InboundRequestGuardInterface`. The provided `InboundRequestGuardContext` exposes helpers such as `requireHeader()`, `validateHeaders()`, and `validatePayload()` so you can lean on Laravel's Validator (dot notation like `event.order.id` supported) instead of building custom exceptions. `captureFailures()` defaults to `true`, which captures the rejected webhook as failed; returning `false` skips capture entirely for negative attempts.
+> **Inbound Guards:** Call `guard(YourGuard::class)` to run inline guard classes that implement `InboundRequestGuardInterface`. The provided `InboundRequestGuardContext` exposes helpers such as `requireHeader()`, `validateHeaders()`, and `validatePayload()` so you can lean on Laravel's Validator (dot notation like `event.order.id` supported) instead of building custom exceptions. `captureHeaderFailure()` / `capturePayloadFailure()` default to `true`, capturing rejected webhooks for those paths; returning `false` skips capture entirely for that failure type.
 
 ### Delivery Actions
 
