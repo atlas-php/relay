@@ -177,11 +177,10 @@ Adjust the cadence as needed for your environment or run the commands manually.
 | Key | Description / Env Override |
 | --- | --- |
 | `tables.relays`, `tables.relay_routes`, `tables.relay_archives` | Customize table names. |
-| `capture.max_payload_bytes` (`ATLAS_RELAY_MAX_PAYLOAD_BYTES`) | Max captured payload size (default 64KB). |
+| `payload.max_bytes` | Unified max byte size for captured payloads, stored responses, and exception summaries (default 64KB). |
 | `capture.sensitive_headers` | Header block list automatically masked to `*********`. |
-| `lifecycle.exception_response_max_bytes` (`ATLAS_RELAY_EXCEPTION_RESPONSE_MAX_BYTES`) | Max bytes stored for exception summaries recorded in `response_payload`. |
 | `routing.cache_ttl_seconds`, `routing.cache_store` | Router cache behaviour. |
-| `http.max_response_bytes`, `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
+| `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
 | `archiving.archive_after_days`, `archiving.purge_after_days` | Retention windows for archival and purge jobs. Use `atlas-relay:archive --chunk=` to adjust batch size (default `500`). |
 | `automation.stuck_threshold_minutes`, `automation.timeout_buffer_seconds` | Controls when "requeue stuck" and "enforce timeouts" consider a relay overdue. |
 

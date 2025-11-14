@@ -79,7 +79,7 @@ class RelayLifecycleService
 
     public function recordExceptionResponse(Relay $relay, Throwable $exception): Relay
     {
-        $maxBytes = (int) config('atlas-relay.lifecycle.exception_response_max_bytes', 1024);
+        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
         $summary = $this->formatExceptionSummary($exception);
 
         return $this->recordResponse($relay, null, $this->truncateString($summary, $maxBytes));

@@ -273,7 +273,7 @@ class RelayHttpClient
             return null;
         }
 
-        $maxBytes = (int) config('atlas-relay.http.max_response_bytes', 16 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
 
         return strlen($payload) > $maxBytes
             ? substr($payload, 0, $maxBytes)
@@ -353,7 +353,7 @@ class RelayHttpClient
             return;
         }
 
-        $maxBytes = (int) config('atlas-relay.capture.max_payload_bytes', 64 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
         $payloadBytes = $this->payloadSize($normalized);
 
         if ($payloadBytes > $maxBytes) {

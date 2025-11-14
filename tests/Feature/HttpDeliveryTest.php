@@ -119,7 +119,7 @@ class HttpDeliveryTest extends TestCase
         ]);
 
         $payload = ['data' => str_repeat('A', 70 * 1024)];
-        $limit = (int) config('atlas-relay.capture.max_payload_bytes', 64 * 1024);
+        $limit = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
 
         try {
             Relay::http()->post('https://example.com/relay', $payload);

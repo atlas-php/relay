@@ -75,7 +75,7 @@ class EventDeliveryTest extends TestCase
             $this->assertStringContainsString('RuntimeException', $relay->response_payload);
             $this->assertStringContainsString('boom', $relay->response_payload);
             $this->assertLessThanOrEqual(
-                (int) config('atlas-relay.lifecycle.exception_response_max_bytes'),
+                (int) config('atlas-relay.payload.max_bytes'),
                 strlen($relay->response_payload)
             );
         }

@@ -18,8 +18,11 @@ return [
         'purge_after_days' => env('ATLAS_RELAY_PURGE_DAYS', 180),
     ],
 
+    'payload' => [
+        'max_bytes' => 64 * 1024,
+    ],
+
     'capture' => [
-        'max_payload_bytes' => env('ATLAS_RELAY_MAX_PAYLOAD_BYTES', 64 * 1024),
         'sensitive_headers' => [
             'authorization',
             'proxy-authorization',
@@ -29,17 +32,12 @@ return [
         ],
     ],
 
-    'lifecycle' => [
-        'exception_response_max_bytes' => env('ATLAS_RELAY_EXCEPTION_RESPONSE_MAX_BYTES', 1024),
-    ],
-
     'routing' => [
         'cache_ttl_seconds' => env('ATLAS_RELAY_ROUTE_CACHE_SECONDS', 1200),
         'cache_store' => env('ATLAS_RELAY_ROUTE_CACHE_STORE'),
     ],
 
     'http' => [
-        'max_response_bytes' => env('ATLAS_RELAY_MAX_RESPONSE_BYTES', 16 * 1024),
         'max_redirects' => env('ATLAS_RELAY_MAX_REDIRECTS', 3),
         'enforce_https' => env('ATLAS_RELAY_ENFORCE_HTTPS', true),
     ],

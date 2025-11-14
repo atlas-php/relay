@@ -59,7 +59,7 @@ class RelayCaptureService
             }
         }
 
-        $maxBytes = (int) config('atlas-relay.capture.max_payload_bytes', 64 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
         $payloadBytes = $this->payloadSize($payload);
 
         if ($payloadBytes > $maxBytes) {
