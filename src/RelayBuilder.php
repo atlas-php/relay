@@ -33,6 +33,8 @@ class RelayBuilder
 
     private mixed $payload;
 
+    private mixed $meta = null;
+
     private ?RelayType $type = null;
 
     /** @var array<string, array<int, string>> */
@@ -92,6 +94,13 @@ class RelayBuilder
     public function payload(mixed $payload): self
     {
         $this->payload = $payload;
+
+        return $this;
+    }
+
+    public function meta(mixed $meta): self
+    {
+        $this->meta = $meta;
 
         return $this;
     }
@@ -162,6 +171,7 @@ class RelayBuilder
             $capturedUrl,
             $this->provider,
             $this->referenceId,
+            $this->meta,
             $this->resolvedHeaders()
         );
     }

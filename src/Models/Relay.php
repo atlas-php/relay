@@ -24,6 +24,7 @@ use Atlas\Relay\Enums\RelayType;
  * @property int|null $response_http_status
  * @property array<mixed>|string|null $response_payload
  * @property int|null $failure_reason
+ * @property array<mixed>|null $meta
  * @property \Carbon\CarbonImmutable|null $processing_at
  * @property \Carbon\CarbonImmutable|null $completed_at
  * @property \Carbon\CarbonImmutable|null $created_at
@@ -38,6 +39,7 @@ class Relay extends AtlasModel
         'headers' => 'array',
         'payload' => 'array',
         'response_payload' => 'array',
+        'meta' => 'array',
         'type' => RelayType::class,
         'status' => RelayStatus::class,
         'method' => HttpMethod::class,

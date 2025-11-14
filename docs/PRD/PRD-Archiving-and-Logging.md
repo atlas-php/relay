@@ -23,7 +23,7 @@ Relay Created → Inline Updates → Completed/Failed → Archived → Purged
 ## Data Model
 
 ### Source of Truth
-- `atlas_relays` contains all lifecycle metadata: type, status, failure_reason, response_http_status/payload, and timing fields (`processing_at`, `completed_at`, etc.).
+- `atlas_relays` contains all lifecycle metadata: type, status, failure_reason, meta, response_http_status/payload, and timing fields (`processing_at`, `completed_at`, etc.).
 - Timeout enforcement relies on inline relay fields (`processing_at`, `completed_at`) plus the automation config settings.
 - No separate log tables.
 - Archived records are exact copies.
@@ -74,7 +74,7 @@ Batch size for archiving is controlled at runtime via `php artisan atlas-relay:a
 ## Observability
 Inline fields provide all required metrics:
 
-- `status`, `failure_reason`, `response_http_status`, `response_payload` (truncated)
+- `status`, `failure_reason`, `meta`, `response_http_status`, `response_payload` (truncated)
 - Attempt counts and scheduling timestamps
 - `processing_at`, `completed_at`, and other lifecycle timestamps/duration fields
 - `completed_at` records the end of any lifecycle (success, failure, or cancellation) and is the canonical timestamp for retention policies.

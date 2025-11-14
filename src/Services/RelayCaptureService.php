@@ -94,6 +94,7 @@ class RelayCaptureService
             'headers' => $headers,
             'payload' => $payload,
             'failure_reason' => $failureReason?->value,
+            'meta' => $context->meta,
             'response_payload' => null,
             'method' => $method?->value,
             'url' => $url,

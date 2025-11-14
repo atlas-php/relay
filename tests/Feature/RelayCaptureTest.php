@@ -143,4 +143,18 @@ class RelayCaptureTest extends TestCase
         $this->assertSame(RelayFailure::INVALID_PAYLOAD->value, $relay->failure_reason);
         $this->assertSame('{"foo": "bar"', $relay->payload);
     }
+
+    public function test_meta_payload_is_persisted(): void
+    {
+        $meta = [
+            'attempt' => 1,
+            'labels' => ['beta'],
+        ];
+
+        $relay = Relay::payload(['foo' => 'bar'])
+            ->meta($meta)
+            ->capture();
+
+        $this->assertSame($meta, $relay->meta);
+    }
 }

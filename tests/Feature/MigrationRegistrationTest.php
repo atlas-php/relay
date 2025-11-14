@@ -31,6 +31,7 @@ class MigrationRegistrationTest extends TestCase
             'method',
             'url',
             'failure_reason',
+            'meta',
             'response_http_status',
             'response_payload',
             'processing_at',

@@ -29,6 +29,7 @@ class RelayContext
         public readonly ?string $url = null,
         public readonly ?string $provider = null,
         public readonly ?string $referenceId = null,
+        public readonly mixed $meta = null,
         public readonly array $headers = [],
     ) {}
 }

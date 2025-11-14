@@ -39,6 +39,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | --- | --- |
 | `request(Request $request)` | Replace/define the inbound request snapshot (also extracts payload when present). |
 | `payload(mixed $payload)` | Provide raw payload data (array/stdClass/scalar) or override what was extracted from the request. |
+| `meta(mixed $meta)` | Attach arbitrary JSON metadata that persists with the relay for downstream analytics. |
 | `type(RelayType $type)` | Explicitly set the `RelayType` (defaults to `INBOUND` for `request()` and `OUTBOUND` for `http()`). |
 | `validationError(string $field, string $message)` | Append validation feedback for reporting/logging prior to capture. |
 | `failWith(RelayFailure $failure, RelayStatus $status = RelayStatus::FAILED)` | Prefill capture state to failed with a specific failure code. |

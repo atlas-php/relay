@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Atlas\Relay\Enums\RelayStatus;
-use Atlas\Relay\Enums\RelayType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
@@ -17,7 +16,7 @@ return new class extends Migration
 
         $this->schema()->create($tableName, function (Blueprint $table): void {
             $table->bigIncrements('id');
-            $table->unsignedTinyInteger('type')->default(RelayType::RELAY->value);
+            $table->unsignedTinyInteger('type');
             $table->unsignedTinyInteger('status')->default(RelayStatus::QUEUED->value);
             $table->string('provider', 64)->nullable();
             $table->string('reference_id', 255)->nullable();
@@ -29,6 +28,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('response_http_status')->nullable();
             $table->json('response_payload')->nullable();
             $table->unsignedSmallInteger('failure_reason')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamp('processing_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();

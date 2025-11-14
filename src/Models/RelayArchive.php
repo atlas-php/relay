@@ -21,6 +21,7 @@ class RelayArchive extends AtlasModel
         'headers' => 'array',
         'payload' => 'array',
         'response_payload' => 'array',
+        'meta' => 'array',
         'type' => RelayType::class,
         'status' => RelayStatus::class,
         'method' => HttpMethod::class,

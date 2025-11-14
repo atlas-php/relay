@@ -20,6 +20,7 @@ Receive Webhook Relay is the first stage of Atlas Relay. It guarantees that ever
 | `method`               | HTTP verb detected from the request (if present).                           |
 | `url`                  | Full inbound URL (or target URL for outbound calls).                        |
 | `failure_reason`       | `RelayFailure` enum for capture or downstream failures.                     |
+| `meta`                 | Consumer-defined JSON metadata captured alongside the relay.                |
 | `response_http_status` | Last recorded outbound HTTP status.                                         |
 | `response_payload`     | Truncated outbound response payload.                                        |
 | `processing_at`        | Timestamp for when processing began.                                        |
