@@ -129,16 +129,41 @@ Relay::request($request)
 
 ### Failing Guard Example
 ```php
-
 use Atlas\Relay\Guards\BaseInboundRequestGuard;
 use Atlas\Relay\Guards\InboundRequestGuardContext;
+use Atlas\Relay\Exceptions\InvalidWebhookHeadersException;
 
 class ExampleGuard extends BaseInboundRequestGuard
 {
     public function validate(InboundRequestGuardContext $context): void
     {
-        if (! $context->header('X-Signature')) {
-            $context->failHeaders(['Missing X-Signature header']);
+        // Require a signature header and fail with header violations
+        if ($context->header('X-Signature') === null) {
+            $context->failHeaders(['Missing X-Signature header.']);
+        }
+
+        // Validate a required payload field and fail with payload violations
+        $eventType = data_get($context->payload(), 'type');
+        if ($eventType === null) {
+            $context->failPayload(['Missing event type on payload.']);
+        }
+
+        // Use Laravel's validator and pipe validation errors into the guard failure
+        $validator = validator($context->payload(), [
+            'id'     => ['required', 'string'],
+            'amount' => ['required', 'numeric'],
+        ]);
+
+        if ($validator->fails()) {
+            $context->failPayload($validator->errors()->all());
+        }
+
+        // Optionally throw a hard failure exception to bubble out to the controller layer
+        if ($context->header('X-Block-All') === '1') {
+            throw InvalidWebhookHeadersException::fromViolations(
+                static::class,
+                ['Request blocked by ExampleGuard.'],
+            );
         }
     }
 }
