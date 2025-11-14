@@ -22,7 +22,7 @@ class RelayArchive extends AtlasModel
         'response_payload' => 'array',
         'status' => RelayStatus::class,
         'method' => HttpMethod::class,
-        'attempt_count' => 'integer',
+        'attempts' => 'integer',
         'response_http_status' => 'integer',
         'failure_reason' => 'integer',
         'route_id' => 'integer',

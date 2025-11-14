@@ -29,7 +29,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('response_http_status')->nullable();
             $table->json('response_payload')->nullable();
             $table->unsignedSmallInteger('failure_reason')->nullable();
-            $table->unsignedSmallInteger('attempt_count')->default(0);
+            $table->unsignedInteger('attempts')->default(0);
             $table->timestamp('next_retry_at')->nullable();
             $table->timestamp('processing_at')->nullable();
             $table->timestamp('completed_at')->nullable();

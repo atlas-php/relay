@@ -9,6 +9,7 @@ use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Models\RelayArchive;
 use Atlas\Relay\Models\RelayRoute;
+use Atlas\Relay\Services\RelayLifecycleService;
 use Atlas\Relay\Tests\TestCase;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,41 @@ class AutomationCommandsTest extends TestCase
         $this->assertNull($relay->next_retry_at);
         $this->assertNull($relay->failure_reason);
         $this->assertNull($relay->completed_at);
+    }
+
+    public function test_retry_overdue_resets_response_state_and_increments_attempts_on_next_run(): void
+    {
+        $relay = Relay::query()->create([
+            'source_ip' => '127.0.0.1',
+            'headers' => [],
+            'payload' => [],
+            'status' => RelayStatus::FAILED,
+            'mode' => 'http',
+            'attempts' => 2,
+            'response_http_status' => 500,
+            'response_payload' => 'error payload',
+            'failure_reason' => 201,
+            'next_retry_at' => Carbon::now()->subMinutes(5),
+            'completed_at' => Carbon::now()->subMinutes(5),
+        ]);
+
+        $this->runPendingCommand('atlas-relay:retry-overdue')->assertExitCode(0);
+
+        $relay->refresh();
+        $this->assertSame(RelayStatus::QUEUED, $relay->status);
+        $this->assertNull($relay->response_http_status);
+        $this->assertNull($relay->response_payload);
+        $this->assertNull($relay->failure_reason);
+        $this->assertNull($relay->completed_at);
+        $this->assertNull($relay->next_retry_at);
+        $this->assertSame(2, $relay->attempts);
+
+        $lifecycle = app(RelayLifecycleService::class);
+        $lifecycle->startAttempt($relay);
+
+        $relay->refresh();
+        $this->assertSame(RelayStatus::PROCESSING, $relay->status);
+        $this->assertSame(3, $relay->attempts);
     }
 
     public function test_requeue_stuck_command_moves_processing_relays_back_to_queue(): void

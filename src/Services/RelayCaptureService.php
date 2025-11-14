@@ -95,7 +95,7 @@ class RelayCaptureService
             'mode' => $context->mode,
             'failure_reason' => $failureReason?->value,
             'response_payload' => null,
-            'attempt_count' => 0,
+            'attempts' => 0,
             'route_id' => $context->routeId,
             'method' => $method?->value,
             'url' => $url,

@@ -36,7 +36,7 @@ class MigrationRegistrationTest extends TestCase
             'failure_reason',
             'response_http_status',
             'response_payload',
-            'attempt_count',
+            'attempts',
             'next_retry_at',
             'processing_at',
             'completed_at',

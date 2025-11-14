@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $response_http_status
  * @property array<mixed>|string|null $response_payload
  * @property int|null $failure_reason
- * @property int $attempt_count
+ * @property int $attempts
  * @property \Carbon\CarbonImmutable|null $next_retry_at
  * @property \Carbon\CarbonImmutable|null $processing_at
  * @property \Carbon\CarbonImmutable|null $completed_at
@@ -45,7 +45,7 @@ class Relay extends AtlasModel
         'response_payload' => 'array',
         'status' => RelayStatus::class,
         'method' => HttpMethod::class,
-        'attempt_count' => 'integer',
+        'attempts' => 'integer',
         'response_http_status' => 'integer',
         'failure_reason' => 'integer',
         'route_id' => 'integer',

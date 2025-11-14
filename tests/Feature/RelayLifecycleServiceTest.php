@@ -41,7 +41,7 @@ class RelayLifecycleServiceTest extends TestCase
         $this->assertSame(RelayStatus::QUEUED, $replayed->status);
         $this->assertNull($replayed->failure_reason);
         $this->assertNull($replayed->completed_at);
-        $this->assertSame(0, $replayed->attempt_count);
+        $this->assertSame(0, $replayed->attempts);
     }
 
     public function test_processing_and_completion_timestamps_are_managed(): void
@@ -59,6 +59,7 @@ class RelayLifecycleServiceTest extends TestCase
         $this->assertSame(RelayStatus::PROCESSING, $relay->status);
         $this->assertTrue($relay->processing_at?->equalTo(Carbon::now()));
         $this->assertNull($relay->completed_at);
+        $this->assertSame(1, $relay->attempts);
 
         $relay->forceFill(['next_retry_at' => Carbon::now()->addMinutes(5)])->save();
 
@@ -77,6 +78,7 @@ class RelayLifecycleServiceTest extends TestCase
         $relay->refresh();
 
         $this->assertNull($relay->completed_at);
+        $this->assertSame(2, $relay->attempts);
 
         Carbon::setTestNow('2025-04-01 08:07:00');
         $lifecycle->markCompleted($relay);

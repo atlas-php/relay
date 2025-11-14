@@ -118,7 +118,7 @@ class DispatchDeliveryTest extends TestCase
         $relay = $this->assertRelayInstance($builder->relay());
         $relay->refresh();
 
-        $this->assertSame(1, $relay->attempt_count);
+        $this->assertSame(1, $relay->attempts);
         $this->assertSame(RelayStatus::COMPLETED, $relay->status);
     }
 

@@ -89,6 +89,28 @@ class EventDeliveryTest extends TestCase
         }
     }
 
+    public function test_event_exception_payload_is_truncated_to_limit(): void
+    {
+        $builder = Relay::payload(['foo' => 'bar']);
+
+        $original = config('atlas-relay.payload.max_bytes');
+        config()->set('atlas-relay.payload.max_bytes', 32);
+
+        try {
+            $builder->event(function (): void {
+                throw new RuntimeException(str_repeat('long-message-', 5));
+            });
+            $this->fail('Expected exception was not thrown.');
+        } catch (RuntimeException) {
+            $relay = $this->assertRelayInstance($builder->relay());
+            $this->assertIsString($relay->response_payload);
+            $this->assertLessThanOrEqual(32, strlen($relay->response_payload));
+            $this->assertStringEndsWith('...', $relay->response_payload);
+        } finally {
+            config()->set('atlas-relay.payload.max_bytes', $original);
+        }
+    }
+
     public function test_event_callback_can_access_payload_when_declared(): void
     {
         $builder = Relay::payload(['foo' => 'bar', 'count' => 5]);

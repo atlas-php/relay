@@ -21,7 +21,7 @@ class RelayLifecycleService
 
         $relay->forceFill([
             'status' => RelayStatus::PROCESSING,
-            'attempt_count' => ($relay->attempt_count ?? 0) + 1,
+            'attempts' => ($relay->attempts ?? 0) + 1,
             'processing_at' => $now,
             'completed_at' => null,
         ])->save();
@@ -105,7 +105,6 @@ class RelayLifecycleService
             'completed_at' => null,
             'next_retry_at' => null,
             'processing_at' => null,
-            'attempt_count' => 0,
         ])->save();
 
         return $relay;
