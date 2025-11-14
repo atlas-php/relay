@@ -43,6 +43,8 @@ Additional setup instructions (config publish, migrations, scheduler, etc.) live
 
 ### Receive a Webhook
 
+`Relay::request($request)` automatically grabs the inbound payload (JSON) and sends it into your events. (See [Payload Capture](./docs/PRD/PRD-Payload-Capture.md)).
+
 ```php
 // The most common way
 Relay::request($request)->event(fn($payload) => $this->handleEvent($payload));
@@ -54,13 +56,14 @@ Relay::request($request)->dispatch(fn($payload) => $this->handleEvent($payload))
 Relay::request($request)->dispatch(new ExampleJob);
 ```
 
-You can use Laravel `dispatch()` functionality.
-
-`Relay::request($request)` automatically grabs the inbound payload (JSON or form data), so your event callbacks immediately receive the decoded payload. (See [Payload Capture](./docs/PRD/PRD-Payload-Capture.md)).
+Using `event` synchronously processes your action, but you can also use Laravel's `dispatch()` and its methods directly. Atlas will ensure to mark the relay completed or failed depending on the execution. 
 
 ---
 
 ### Send a Webhook
+
+You can use Laravel's `http()` and it's methods directly.
+
 ```php
 $payload = ['event' => 'order.created'];
 
@@ -78,7 +81,8 @@ Relay::http()->withHeaders([
     'X-API-KEY' => '1234567890'
 ])->post('https://api.example.com/webhooks', $payload);
 ```
-Laravel `http()` methods you're most likely already using are available. When you start from `Relay::request($request)`, inbound headers are copied automatically—just configure the HTTP client with `withHeaders()`, `accept()`, etc., and Atlas will record those values for you. (See [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)).
+
+Atlas will record the response status and payload of your request (See [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)).
 
 ---
 
