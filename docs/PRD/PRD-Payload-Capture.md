@@ -62,6 +62,31 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 
 ---
 
+### Provider Inbound Guards
+Provider-level guard profiles enforce authentication headers before any webhook proceeds. Configure them in `config/atlas-relay.php`:
+
+```php
+'inbound' => [
+    'provider_guards' => [
+        'stripe' => 'stripe-signature',
+    ],
+    'guards' => [
+        'stripe-signature' => [
+            'capture_forbidden' => true,
+            'required_headers' => [
+                'Stripe-Signature',
+                'X-Relay-Key' => env('RELAY_SHARED_KEY'),
+            ],
+            'validator' => \App\Guards\StripeWebhookGuard::class, // optional
+        ],
+    ],
+];
+```
+
+Guards can be mapped via `setProvider('stripe')` or specified explicitly with `guard('stripe-signature')`. When the guard rejects a request, Atlas throws `Atlas\Relay\Exceptions\ForbiddenWebhookException` and marks the relay with `RelayFailure::FORBIDDEN_GUARD` when `capture_forbidden` is `true`. Set `capture_forbidden` to `false` for test/local providers to skip persisting failed attempts while still enforcing the guard.
+
+---
+
 ## Cache Behavior
 - Cache key: domain + path + method.
 - Lifetime: 20 minutes.

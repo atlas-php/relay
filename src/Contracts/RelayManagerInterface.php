@@ -23,6 +23,8 @@ interface RelayManagerInterface
 
     public function setReferenceId(?string $referenceId): RelayBuilder;
 
+    public function guard(?string $guard): RelayBuilder;
+
     public function http(): RelayHttpClient;
 
     public function cancel(Relay $relay): Relay;

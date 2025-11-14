@@ -29,6 +29,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `Relay::payload(mixed $payload): RelayBuilder` | Seed a builder when no HTTP request exists (internal/system triggers). Prefer `request()`/`http()` for typical flows. |
 | `Relay::setProvider(?string $provider): RelayBuilder` | Start a builder, tag it with the provider identifier, and continue configuring (works great before calling `http()`). |
 | `Relay::setReferenceId(?string $referenceId): RelayBuilder` | Same as above but for consumer-defined reference IDs, enabling tagging before issuing `http()` calls. |
+| `Relay::guard(?string $guard): RelayBuilder` | Force a specific inbound guard profile (useful for tests or providers without a global mapping). |
 | `Relay::http(): RelayHttpClient` | Return a ready-to-use HTTP client that captures payload + destination directly from the Laravel HTTP call. |
 | `Relay::cancel(Relay $relay): Relay` | Set the relay status to `cancelled` (uses lifecycle service). |
 | `Relay::replay(Relay $relay): Relay` | Reset lifecycle timestamps/attempt counts and enqueue the relay again. |
@@ -45,6 +46,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `status(RelayStatus $status)` | Override the initial status before capture. |
 | `setProvider(?string $provider)` | Associate the relay with a provider slug for downstream analytics/filters. Accepts `null` to clear. |
 | `setReferenceId(?string $referenceId)` | Store a consumer-defined identifier (order ID, case ID, etc.) alongside the relay record. |
+| `guard(?string $guard)` | Override provider mappings and force a named inbound guard profile to run before capture/delivery. |
 
 > **AutoRoute lifecycle config:** Retries, delays, and timeouts are now configured exclusively on `RelayRoute` definitions. Relays capture the `route_id`, and automation reads the latest route settings when enforcement is required.
 
@@ -57,6 +59,8 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `capture(): Relay` | Forces persistence via `RelayCaptureService` and returns the model. |
 | `relay(): ?Relay` | Returns the last persisted relay instance without re-capturing. |
 | `context(): RelayContext` | Exposes the immutable capture payload (useful for tests). |
+
+> **Inbound Guards:** Guard profiles derive from `atlas-relay.inbound.provider_guards` or explicit `guard()` calls. Guards validate required headers and optional validators before any delivery path, throwing `Atlas\Relay\Exceptions\ForbiddenWebhookException` on failure and marking relays with `RelayFailure::FORBIDDEN_GUARD` when `capture_forbidden` is enabled.
 
 ### Delivery Actions
 
@@ -181,6 +185,7 @@ Adjust the cadence as needed for your environment or run the commands manually.
 | `capture.sensitive_headers` | Header block list automatically masked to `*********`. |
 | `routing.cache_ttl_seconds`, `routing.cache_store` | Router cache behaviour. |
 | `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
+| `inbound.provider_guards`, `inbound.guards` | Define inbound guard mappings + profiles (`capture_forbidden`, `required_headers`, optional validator class) that enforce authentication before webhook processing. |
 | `archiving.archive_after_days`, `archiving.purge_after_days` | Retention windows for archival and purge jobs. Use `atlas-relay:archive --chunk=` to adjust batch size (default `500`). |
 | `automation.stuck_threshold_minutes`, `automation.timeout_buffer_seconds` | Controls when "requeue stuck" and "enforce timeouts" consider a relay overdue. |
 
@@ -192,6 +197,7 @@ Adjust the cadence as needed for your environment or run the commands manually.
 | --- | --- |
 | `Atlas\Relay\Enums\RelayFailure` | Canonical failure codes (`PAYLOAD_TOO_LARGE`, `NO_ROUTE_MATCH`, etc.) with helper `label()`/`description()`. Use them when forcing failures or handling lifecycle callbacks. |
 | `Atlas\Relay\Exceptions\RelayHttpException` | Thrown for HTTPS enforcement, redirect violations, or other outbound HTTP guard rails. Call `failure()` to obtain the associated `RelayFailure`. |
+| `Atlas\Relay\Exceptions\ForbiddenWebhookException` | Raised when inbound guard profiles reject a webhook; consumers should return `403` to the sender and consult relay logs for `FORBIDDEN_GUARD` failures. |
 | `Atlas\Relay\Exceptions\RelayJobFailedException` | Throw (or use `RelayJobHelper::fail()`) inside jobs to mark a relay as failed with custom attributes. |
 
 ---

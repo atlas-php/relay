@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static RelayBuilder payload(mixed $payload)
  * @method static RelayBuilder setProvider(?string $provider)
  * @method static RelayBuilder setReferenceId(?string $referenceId)
+ * @method static RelayBuilder guard(?string $guard)
  * @method static \Atlas\Relay\Support\RelayHttpClient http()
  * @method static \Atlas\Relay\Models\Relay cancel(\Atlas\Relay\Models\Relay $relay)
  * @method static \Atlas\Relay\Models\Relay replay(\Atlas\Relay\Models\Relay $relay)

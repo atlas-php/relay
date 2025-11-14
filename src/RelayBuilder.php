@@ -7,13 +7,17 @@ namespace Atlas\Relay;
 use Atlas\Relay\Enums\HttpMethod;
 use Atlas\Relay\Enums\RelayFailure;
 use Atlas\Relay\Enums\RelayStatus;
+use Atlas\Relay\Exceptions\ForbiddenWebhookException;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Routing\RouteContext as RoutingContext;
 use Atlas\Relay\Routing\Router;
 use Atlas\Relay\Routing\RouteResult;
 use Atlas\Relay\Routing\RoutingException;
+use Atlas\Relay\Services\InboundGuardService;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
+use Atlas\Relay\Services\RelayLifecycleService;
+use Atlas\Relay\Support\InboundGuardProfile;
 use Atlas\Relay\Support\RelayContext;
 use Atlas\Relay\Support\RelayHttpClient;
 use Atlas\Relay\Support\RequestPayloadExtractor;
@@ -58,10 +62,20 @@ class RelayBuilder
 
     private ?string $referenceId = null;
 
+    private ?string $guardName = null;
+
+    private bool $guardValidated = false;
+
+    private bool $guardProfileResolved = false;
+
+    private ?InboundGuardProfile $guardProfile = null;
+
     public function __construct(
         private readonly RelayCaptureService $captureService,
         private readonly Router $router,
         private readonly RelayDeliveryService $deliveryService,
+        private readonly RelayLifecycleService $lifecycleService,
+        private readonly InboundGuardService $guardService,
         ?Request $request = null,
         mixed $payload = null,
         ?RequestPayloadExtractor $payloadExtractor = null
@@ -123,6 +137,8 @@ class RelayBuilder
      */
     public function capture(): Relay
     {
+        $this->ensureInboundGuardValidated();
+
         return $this->ensureRelayCaptured();
     }
 
@@ -165,6 +181,7 @@ class RelayBuilder
     {
         $provider = is_string($provider) ? trim($provider) : null;
         $this->provider = $provider === '' ? null : $provider;
+        $this->resetGuardState();
 
         return $this;
     }
@@ -177,8 +194,18 @@ class RelayBuilder
         return $this;
     }
 
+    public function guard(?string $guard): self
+    {
+        $guard = is_string($guard) ? trim($guard) : null;
+        $this->guardName = $guard === '' ? null : $guard;
+        $this->resetGuardState();
+
+        return $this;
+    }
+
     public function event(callable $callback): mixed
     {
+        $this->ensureInboundGuardValidated();
         $this->mode ??= 'event';
         $relay = $this->ensureRelayCaptured();
 
@@ -197,6 +224,7 @@ class RelayBuilder
 
     public function http(): RelayHttpClient
     {
+        $this->ensureInboundGuardValidated();
         $this->mode ??= 'http';
 
         $headerRecorder = function (array $headers): void {
@@ -212,6 +240,7 @@ class RelayBuilder
 
     public function dispatch(mixed $job): PendingDispatch
     {
+        $this->ensureInboundGuardValidated();
         $this->mode ??= 'dispatch';
         $relay = $this->ensureRelayCaptured();
 
@@ -223,6 +252,7 @@ class RelayBuilder
      */
     public function dispatchChain(array $jobs): PendingChain
     {
+        $this->ensureInboundGuardValidated();
         $this->mode ??= 'dispatch_chain';
         $relay = $this->ensureRelayCaptured();
 
@@ -231,6 +261,7 @@ class RelayBuilder
 
     private function handleAutoRoute(string $mode): self
     {
+        $this->ensureInboundGuardValidated();
         $this->resolvedMethod = null;
         $this->resolvedUrl = null;
 
@@ -275,9 +306,92 @@ class RelayBuilder
         return $this->capturedRelay;
     }
 
+    private function ensureInboundGuardValidated(): void
+    {
+        if ($this->guardValidated) {
+            return;
+        }
+
+        $request = $this->request;
+
+        if ($request === null) {
+            $this->guardValidated = true;
+
+            return;
+        }
+
+        $profile = $this->resolveGuardProfile();
+
+        if ($profile === null) {
+            $this->guardValidated = true;
+
+            return;
+        }
+
+        $relay = $profile->captureForbidden ? $this->ensureRelayCaptured() : null;
+
+        try {
+            $this->guardService->validate($request, $profile, $relay);
+        } catch (ForbiddenWebhookException $exception) {
+            $this->handleGuardFailure($exception, $profile, $relay);
+
+            throw $exception;
+        }
+
+        $this->guardValidated = true;
+    }
+
+    private function resolveGuardProfile(): ?InboundGuardProfile
+    {
+        if ($this->guardProfileResolved) {
+            return $this->guardProfile;
+        }
+
+        $this->guardProfileResolved = true;
+
+        if ($this->request === null) {
+            $this->guardProfile = null;
+
+            return null;
+        }
+
+        return $this->guardProfile = $this->guardService->resolveProfile($this->guardName, $this->provider);
+    }
+
+    private function resetGuardState(): void
+    {
+        $this->guardValidated = false;
+        $this->guardProfileResolved = false;
+        $this->guardProfile = null;
+    }
+
+    private function handleGuardFailure(
+        ForbiddenWebhookException $exception,
+        InboundGuardProfile $profile,
+        ?Relay $relay
+    ): void {
+        if (! $profile->captureForbidden || ! $relay instanceof Relay) {
+            return;
+        }
+
+        $this->lifecycleService->markFailed(
+            $relay,
+            RelayFailure::FORBIDDEN_GUARD,
+            [
+                'response_http_status' => $exception->statusCode(),
+                'response_payload' => [
+                    'guard' => $profile->name,
+                    'message' => $exception->getMessage(),
+                    'violations' => $exception->violations(),
+                ],
+            ]
+        );
+    }
+
     private function applyRequest(Request $request): void
     {
         $this->request = $request;
+        $this->resetGuardState();
 
         if ($this->payload === null) {
             $extracted = $this->payloadExtractor->extract($request);

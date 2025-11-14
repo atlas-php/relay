@@ -46,4 +46,21 @@ return [
         'stuck_threshold_minutes' => env('ATLAS_RELAY_STUCK_THRESHOLD_MINUTES', 10),
         'timeout_buffer_seconds' => env('ATLAS_RELAY_TIMEOUT_BUFFER_SECONDS', 0),
     ],
+
+    'inbound' => [
+        'provider_guards' => [
+            // 'stripe' => 'stripe-signature',
+        ],
+
+        'guards' => [
+            // 'stripe-signature' => [
+            //     'capture_forbidden' => true,
+            //     'required_headers' => [
+            //         'stripe-signature',
+            //         'x-team-token' => 'expected-value',
+            //     ],
+            //     'validator' => null,
+            // ],
+        ],
+    ],
 ];

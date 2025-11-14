@@ -17,6 +17,7 @@ use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Models\RelayRoute;
 use Atlas\Relay\RelayManager;
 use Atlas\Relay\Routing\Router;
+use Atlas\Relay\Services\InboundGuardService;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
 use Atlas\Relay\Services\RelayLifecycleService;
@@ -55,6 +56,7 @@ class AtlasRelayServiceProvider extends ServiceProvider
             return new RelayCaptureService(new Relay, $app->make(RequestPayloadExtractor::class));
         });
         $this->app->singleton(RelayLifecycleService::class, RelayLifecycleService::class);
+        $this->app->singleton(InboundGuardService::class, InboundGuardService::class);
         $this->app->scoped(RelayJobContext::class, RelayJobContext::class);
         $this->app->scoped(RelayDeliveryService::class, RelayDeliveryService::class);
         $this->app->scoped(RelayJobHelper::class, RelayJobHelper::class);
