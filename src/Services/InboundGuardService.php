@@ -44,33 +44,15 @@ class InboundGuardService
         InboundRequestGuardInterface $guard,
         InboundRequestGuardContext $context
     ): void {
-        $this->executeHeaderValidation($guard, $context);
-        $this->executePayloadValidation($guard, $context);
-    }
-
-    private function executeHeaderValidation(
-        InboundRequestGuardInterface $guard,
-        InboundRequestGuardContext $context
-    ): void {
         try {
-            $guard->validateHeaders($context);
-        } catch (InvalidWebhookHeadersException $exception) {
+            $guard->validate($context);
+        } catch (InvalidWebhookHeadersException|InvalidWebhookPayloadException $exception) {
             throw $exception;
         } catch (\Throwable $exception) {
-            throw InvalidWebhookHeadersException::fromViolations($guard->name(), [$exception->getMessage()]);
-        }
-    }
-
-    private function executePayloadValidation(
-        InboundRequestGuardInterface $guard,
-        InboundRequestGuardContext $context
-    ): void {
-        try {
-            $guard->validatePayload($context);
-        } catch (InvalidWebhookPayloadException $exception) {
-            throw $exception;
-        } catch (\Throwable $exception) {
-            throw InvalidWebhookPayloadException::fromViolations($guard->name(), [$exception->getMessage()]);
+            throw InvalidWebhookPayloadException::fromViolations(
+                $context->guardName(),
+                [$exception->getMessage()]
+            );
         }
     }
 

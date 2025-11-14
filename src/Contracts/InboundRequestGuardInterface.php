@@ -12,22 +12,13 @@ use Atlas\Relay\Support\InboundRequestGuardContext;
 interface InboundRequestGuardInterface
 {
     /**
-     * Human-readable name shown in exception payloads and relay failure metadata.
-     */
-    public function name(): string;
-
-    /**
-     * Whether Atlas should persist and flag failed attempts when this guard blocks a request.
+     * Return true (default) to persist the webhook as a failed relay when validation fails;
+     * return false to reject the request without capturing anything.
      */
     public function captureFailures(): bool;
 
     /**
-     * Validate inbound headers (authentication/signatures) and throw InvalidWebhookHeadersException when rejected.
+     * Validate inbound requests using the provided context helpers and throw guard exceptions on failure.
      */
-    public function validateHeaders(InboundRequestGuardContext $context): void;
-
-    /**
-     * Validate normalized payload data and throw InvalidWebhookPayloadException when rejected.
-     */
-    public function validatePayload(InboundRequestGuardContext $context): void;
+    public function validate(InboundRequestGuardContext $context): void;
 }

@@ -54,52 +54,39 @@ Receive Webhook Relay is the first stage of Atlas Relay. It guarantees that ever
 
 ## Inbound Guard Classes
 
-Inbound guards are authored as plain PHP classes and registered inline via `guard(StripeWebhookGuard::class)`. No configuration files are required. Guards can **implement** `Atlas\Relay\Contracts\InboundRequestGuardInterface` or extend the convenience base class `Atlas\Relay\Guards\BaseInboundRequestGuard`.
+Inbound guards are authored as plain PHP classes and registered inline via `guard(StripeWebhookGuard::class)`. No configuration files are required. Guards can **implement** `Atlas\Relay\Contracts\InboundRequestGuardInterface` or extend `Atlas\Relay\Guards\BaseInboundRequestGuard`.
 
-- `validateHeaders()` is responsible for authentication or signature validation and should throw `Atlas\Relay\Exceptions\InvalidWebhookHeadersException` when the check fails. Atlas automatically surfaces `RelayFailure::INVALID_GUARD_HEADERS` (code `108`) for captured attempts.
-- `validatePayload()` receives the normalized payload array/object and should throw `Atlas\Relay\Exceptions\InvalidWebhookPayloadException` for schema problems. Atlas records `RelayFailure::INVALID_GUARD_PAYLOAD` (code `109`) with the violations.
-- Both validation methods receive an `InboundRequestGuardContext` that already contains the `Request`, normalized headers, decoded payload, and (when configured) the persisted `Relay` model. Consumers never need to rehydrate these values manually.
-- `captureFailures()` controls whether a failing guard persists the relay before throwing. Return `true` for audit trails or `false` for providers that should not log rejected attempts.
-- Guard methods are optional—leave either method untouched if only headers or payload validation is required.
+- Guards receive an `InboundRequestGuardContext` that already contains the `Request`, normalized headers, decoded payload, and (when configured) the persisted `Relay` model. Consumers never need to gather these manually.
+- `$context->requireHeader('X-Key', env('WEBHOOK_KEY'))` checks for required headers and compares them against secrets without writing custom exception logic.
+- `$context->validateHeaders([...])` and `$context->validatePayload([...])` run Laravel's Validator (including dot-notation rules such as `event.order.id`) against headers/payload arrays. Validation exceptions are converted to `InvalidWebhookHeadersException` or `InvalidWebhookPayloadException` automatically.
+- Call `$context->failHeaders([...])` or `$context->failPayload([...])` when you want to short-circuit with your own error messages.
+- `captureFailures()` controls whether a failing guard should persist the webhook attempt. The default is `true`, meaning the webhook is recorded as failed (using `RelayFailure::INVALID_GUARD_HEADERS` or `INVALID_GUARD_PAYLOAD`). Returning `false` skips capture entirely for blocked attempts.
 
 ### Example guard class
 ```php
-use Atlas\Relay\Exceptions\InvalidWebhookHeadersException;
-use Atlas\Relay\Exceptions\InvalidWebhookPayloadException;
 use Atlas\Relay\Guards\BaseInboundRequestGuard;
 use Atlas\Relay\Support\InboundRequestGuardContext;
-use Illuminate\Support\Arr;
 
 class StripeWebhookGuard extends BaseInboundRequestGuard
 {
-    public function validateHeaders(InboundRequestGuardContext $context): void
+    public function validate(InboundRequestGuardContext $context): void
     {
-        $signature = $context->header('Stripe-Signature');
+        // Require a header and check for a specific secret when needed
+        $context->requireHeader('Stripe-Signature', env('STRIPE_WEBHOOK_SIGNATURE'));
 
-        if ($signature === null) {
-            throw InvalidWebhookHeadersException::fromViolations($this->name(), ['missing Stripe-Signature header']);
-        }
+        // Require a header to simply exist (no comparison)
+        $context->requireHeader('X-Relay-Request');
 
-        $expected = hash_hmac('sha256', $context->request()->getContent(), config('services.stripe.webhook_secret'));
-
-        if (! hash_equals($expected, $signature)) {
-            throw InvalidWebhookHeadersException::fromViolations($this->name(), ['signature mismatch']);
-        }
-    }
-
-    public function validatePayload(InboundRequestGuardContext $context): void
-    {
-        $payload = Arr::wrap($context->payload());
-        $type = Arr::get($payload, 'type');
-
-        if (! in_array($type, ['charge.succeeded', 'charge.failed'], true)) {
-            throw InvalidWebhookPayloadException::fromViolations($this->name(), ['unsupported webhook type']);
-        }
+        $context->validatePayload([
+            'id' => ['required', 'string'],
+            'type' => ['required', 'string'],
+            'event.order.id' => ['required', 'string'], // dot notation uses Laravel's Validator under the hood
+        ]);
     }
 
     public function captureFailures(): bool
     {
-        return true; // audit blocked attempts
+        return true; // capture failed attempts as relays; return false to reject without storing
     }
 }
 ```

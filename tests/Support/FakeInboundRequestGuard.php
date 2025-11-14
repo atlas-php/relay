@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Atlas\Relay\Tests\Support;
 
-use Atlas\Relay\Exceptions\InvalidWebhookHeadersException;
-use Atlas\Relay\Exceptions\InvalidWebhookPayloadException;
 use Atlas\Relay\Guards\BaseInboundRequestGuard;
 use Atlas\Relay\Support\InboundRequestGuardContext;
 
@@ -42,7 +40,7 @@ class FakeInboundRequestGuard extends BaseInboundRequestGuard
         return self::$captureFailures;
     }
 
-    public function validateHeaders(InboundRequestGuardContext $context): void
+    public function validate(InboundRequestGuardContext $context): void
     {
         self::$captures[] = [
             'phase' => 'headers',
@@ -50,27 +48,24 @@ class FakeInboundRequestGuard extends BaseInboundRequestGuard
         ];
 
         if (self::$expectedSignature !== null) {
-            $value = $context->header('Stripe-Signature');
-
-            if ($value !== self::$expectedSignature) {
-                throw InvalidWebhookHeadersException::fromViolations($this->name(), ['signature mismatch']);
-            }
+            $context->requireHeader('Stripe-Signature', self::$expectedSignature);
         }
 
         if (self::$mode === self::MODE_HEADERS) {
-            throw InvalidWebhookHeadersException::fromViolations($this->name(), ['blocked by header guard']);
+            $context->validateHeaders([
+                'Stripe-Signature' => ['required', 'in:blocked'],
+            ]);
         }
-    }
 
-    public function validatePayload(InboundRequestGuardContext $context): void
-    {
         self::$captures[] = [
             'phase' => 'payload',
             'relay_id' => $context->relay()?->id,
         ];
 
         if (self::$mode === self::MODE_PAYLOAD) {
-            throw InvalidWebhookPayloadException::fromViolations($this->name(), ['payload schema mismatch']);
+            $context->validatePayload([
+                'type' => ['required', 'in:charge.succeeded'],
+            ]);
         }
     }
 }

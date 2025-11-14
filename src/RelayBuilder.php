@@ -284,6 +284,7 @@ class RelayBuilder
             $request,
             $this->resolvedHeaders(),
             $this->payload,
+            $this->guardDisplayName($guard),
             $relay
         );
 
@@ -322,6 +323,19 @@ class RelayBuilder
         $this->resolvedGuard = null;
     }
 
+    private function guardDisplayName(InboundRequestGuardInterface $guard): string
+    {
+        if (method_exists($guard, 'name')) {
+            $name = $guard->name();
+
+            if (is_string($name) && trim($name) !== '') {
+                return $name;
+            }
+        }
+
+        return class_basename($guard);
+    }
+
     private function handleGuardFailure(
         Throwable $exception,
         InboundRequestGuardInterface $guard,
@@ -338,7 +352,7 @@ class RelayBuilder
         $status = method_exists($exception, 'statusCode') ? $exception->statusCode() : 400;
 
         $payload = [
-            'guard' => $guard->name(),
+            'guard' => $this->guardDisplayName($guard),
             'message' => $exception->getMessage(),
         ];
 
