@@ -39,6 +39,8 @@ Relay::request($request)
     ->event(fn ($payload) => $this->handleEvent($payload));
 ```
 
+[See controller example with guard and response](./docs/PRD/Receive-Webhook-Relay.md#route-controller-with-guard-and-http-responses)
+
 More inbound examples: [Receive Webhook Relay](./docs/PRD/Receive-Webhook-Relay.md)
 
 ## Send Webhooks
