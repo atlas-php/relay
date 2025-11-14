@@ -1,35 +1,26 @@
 # PRD — Receive Webhook Relay
 
-## Purpose
-Defines **how Atlas Relay receives, validates, and captures inbound webhooks**.  
-This PRD covers *only* the inbound side: guarding, normalization, and capture.
+Atlas Relay defines the rules for receiving, validating, normalizing, and capturing inbound webhook requests before any delivery or processing occurs.
 
-All execution patterns (events, jobs, HTTP) and full usage examples live in:  
-**[Example Usage](./Example-Usage.md)**
+## Table of Contents
+- [High-Level Flow](#high-level-flow)
+- [Guarding](#guarding)
+- [Capture Rules](#capture-rules)
+- [Schema (Inbound Fields)](#schema-inbound-fields)
+- [Failure Codes](#failure-codes)
+- [Usage Link](#usage-link)
+- [Also See](#also-see)
 
-Outbound delivery rules are documented in:  
-**[Send Webhook Relay](./Send-Webhook-Relay.md)**
-
-Full API details are in:  
-**[Full API Reference](../Full-API.md)**
-
----
-
-## High‑Level Flow
-**HTTP Request → Guard (optional) → Normalize → Capture → Event/Dispatch/HTTP**
+## High-Level Flow
+HTTP Request → Guard (optional) → Normalize → Capture → Event/Dispatch/HTTP
 
 1. Receive request
-2. Normalize headers, payload, URL, IP
+2. Normalize headers, payload, method, URL, IP
 3. Run guard validation
 4. Capture relay
-5. Forward to delivery (see **Send Webhook Relay PRD**)
+5. Forward to delivery (see **Send Webhook Relay**)
 
----
-
-## Guarding (Optional)
-Full guard examples (basic + advanced), including inline comments explaining *why* certain patterns exist, are located in:  
-**[Example Usage](./Example-Usage.md#14-advanced-guard-example-with-commentary)**
-
+## Guarding
 Guards may:
 - Require headers
 - Validate payloads with Laravel’s validator
@@ -46,29 +37,25 @@ Guard Base Class:
 Atlas\Relay\Guards\BaseInboundRequestGuard
 ```
 
----
+Full guard examples are in **Example Usage**.
 
 ## Capture Rules
 Atlas Relay must:
 
 - Initialize relay as `INBOUND`
-- Normalize headers/payload
-- Truncate oversized payloads (`payload_max_bytes`)
+- Normalize headers and payload
 - Mask sensitive headers (`sensitive_headers`)
-- Store `INVALID_PAYLOAD`, `INVALID_GUARD_HEADERS`, etc.
-- Persist the relay **before** any business logic or outbound actions
+- Truncate oversized payloads (`payload_max_bytes`)
+- Store inbound failure codes where applicable
+- Persist the relay **before** any downstream logic
 
-Full examples of capture + delivery flow:  
-**[Example Usage](./Example-Usage.md)**
-
----
+Full capture + delivery examples live in **Example Usage**.
 
 ## Schema (Inbound Fields)
-(Complete schema is in **[Full API Reference](../Full-API.md)**)
 
 | Field                        | Description                            |
 |------------------------------|----------------------------------------|
-| `type`                       | Always `INBOUND` for incoming webhooks |
+| `type`                       | Always `INBOUND`                       |
 | `headers`                    | normalized & masked                    |
 | `payload`                    | decoded or raw if JSON fails           |
 | `failure_reason`             | set on guard/capture failure           |
@@ -76,10 +63,8 @@ Full examples of capture + delivery flow:
 | `processing_at`              | downstream start                       |
 | `completed_at`               | lifecycle completion                   |
 
----
-
-## Failure Codes (Inbound)
-Full failure enum in **[Full API Reference](../Full-API.md#failure-reason-enum)**
+## Failure Codes
+Inbound failure codes:
 
 | Code | Meaning               |
 |------|-----------------------|
@@ -88,18 +73,8 @@ Full failure enum in **[Full API Reference](../Full-API.md#failure-reason-enum)*
 | 109  | INVALID_GUARD_PAYLOAD |
 | 101  | PAYLOAD_TOO_LARGE     |
 
----
-
-## Usage Link (Required Reading)
-For production-ready examples—including:
-
-- Full guard implementations
-- Exception handling patterns
-- Multi‑tenant validation logic
-- Header/payload rule enforcement
-- End‑to‑end webhook → event/job/http flows
-
-See:  
-**[Example Usage](./Example-Usage.md)**
-
-This PRD defines the inbound boundary; all examples and delivery patterns live in the usage document for clarity.
+## Also See
+- [Atlas Relay](./Atlas-Relay.md)
+- [Send Webhook Relay](./Send-Webhook-Relay.md)
+- [Archiving & Logging](./Archiving-and-Logging.md)
+- [Example Usage](./Example-Usage.md)
