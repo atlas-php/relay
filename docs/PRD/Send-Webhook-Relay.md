@@ -9,7 +9,6 @@ Atlas Relay defines how outbound webhooks are constructed, configured, executed,
 - [HTTP Execution Behavior](#http-execution-behavior)
 - [Failure Handling](#failure-handling)
 - [Lifecycle Rules](#lifecycle-rules)
-- [Notes](#notes)
 
 ## High-Level Flow
 Relay::http() → Configure → Send → Record Response → Complete/Fail
@@ -21,15 +20,14 @@ Relay::http() → Configure → Send → Record Response → Complete/Fail
 5. Mark Completed or Failed
 
 ## Outbound Model
-Outbound relays:
-
-- Always use `OUTBOUND`
+- Always use `OUTBOUND` type
 - Are captured automatically upon HTTP execution
 - Store full request + response details
 
 All lifecycle fields come from the Atlas Relay schema.
 
 ## Using Relay::http()
+
 ### Basic Example
 ```php
 Relay::http()->post('https://api.example.com/webhook', [
@@ -81,11 +79,6 @@ Mapped failure codes:
 - **Completed** on success
 - **Failed** on exception or failing status codes
 - `completed_at` always set
-
-## Notes
-- No automatic retry system
-- Redirects/SSL behavior handled by Laravel HTTP client
-- Truncation for payload & response controlled by package config
 
 ## Also See
 - [Atlas Relay](./Atlas-Relay.md)
