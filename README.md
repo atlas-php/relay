@@ -19,8 +19,7 @@ Atlas Relay simplifies webhook and payload handling by ensuring every inbound an
 composer require atlas-php/relay
 ```
 
-For publishing config, migrations, and scheduler setup:  
-[Install Guide](./docs/Install.md)
+For publishing config, migrations, and scheduler setup: [Install Guide](./docs/Install.md)
 
 ## Receive Webhooks
 ```php
@@ -40,8 +39,7 @@ Relay::request($request)
     ->event(fn ($payload) => $this->handleEvent($payload));
 ```
 
-More inbound examples:  
-[Receive Webhook Relay](./docs/PRD/Receive-Webhook-Relay.md)
+More inbound examples: [Receive Webhook Relay](./docs/PRD/Receive-Webhook-Relay.md)
 
 ## Send Webhooks
 ```php
@@ -61,8 +59,7 @@ Relay::provider('stripe')
     ->post('https://partner.com/ingest', $payload);
 ```
 
-More outbound examples:  
-[Send Webhook Relay](./docs/PRD/Send-Webhook-Relay.md)
+More outbound examples: [Send Webhook Relay](./docs/PRD/Send-Webhook-Relay.md)
 
 ## Also See
 - [Atlas Relay Model](./docs/PRD/Atlas-Relay.md)
