@@ -1,109 +1,205 @@
 # PRD — Atlas Relay Example Usage
 
 ## Overview
+This document contains **all practical usage patterns** for Atlas Relay, including:
 
-This document shows **exact, practical usage** of Atlas Relay with a focus on **dispatching Laravel jobs through Atlas** while preserving **full access to Laravel’s native queue controls**. Atlas wraps dispatch to **track relay lifecycle** (success/failure, failure_reason, timings) but **does not change** Laravel semantics or APIs.
+- Receiving + guarding webhooks
+- Event / job / HTTP execution
+- Advanced guard logic with inline commentary
+- Accessing relay context in jobs
 
-See also (technical foundations): `PRD-Receive-Webhook-Relay.md`, `PRD-Send-Webhook-Relay.md`, `PRD-Archiving-and-Logging.md`.
+Inbound flow rules are defined in:  
+**[PRD — Receive Webhook Relay](./PRD-Receive-Webhook-Relay.md)**
+
+Outbound delivery rules are defined in:  
+**[PRD — Send Webhook Relay](./PRD-Send-Webhook-Relay.md)**
+
+Full API:  
+**[Full API Reference](../Full-API.md)**
 
 ---
 
-## Goals
+# 1. Receiving Webhooks
 
-- Show how to **dispatch Laravel jobs via Atlas** and still use all Laravel controls (`onQueue`, `onConnection`, `delay`, `afterCommit`, `$tries`, `backoff()`, `middleware()`, `Bus::chain`, etc.).
-- Demonstrate that Atlas **returns Laravel’s native types** (e.g., `PendingDispatch`) so chaining works exactly as if you called Laravel directly.
-- Make clear that Atlas **records lifecycle** automatically before control returns to the caller.
-
----
-
-## 1) Dispatch a Job via Atlas (and chain Laravel controls)
+## 1.1 Basic Webhook Handling
 
 ```php
 use Atlas\Relay\Facades\Relay;
 
-$pending = Relay::request($request)
-    ->dispatch(new ExampleJob($request->all()));   // <-- thin wrapper over Laravel dispatch
+public function __invoke(Request $request)
+{
+    Relay::request($request)
+        ->event(fn ($payload) => $this->process($payload));
 
-// $pending is Laravel\Foundation\Bus\PendingDispatch (same as ExampleJob::dispatch())
-$pending->onQueue('critical')
-        ->onConnection('redis')
-        ->delay(now()->addMinutes(5))
-        ->afterCommit();
+    return response()->json(['ok' => true]);
+}
 ```
-
-**What you get**
-- **Exact Laravel behavior** on `$pending` (it’s the native `PendingDispatch`).
-- Atlas intercepts job completion/failure to set the originating relay’s status (`Completed`/`Failed`) and `failure_reason` when applicable.
 
 ---
 
-## 2) Dispatch with Job Settings ($tries, backoff, middleware)
+## 1.2 Using a Guard (Recommended)
 
 ```php
-// ExampleJob.php
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Atlas\Relay\Facades\Relay;
+use App\Guards\StripeWebhookGuard;
+use Atlas\Relay\Exceptions\InvalidWebhookHeadersException;
+use Atlas\Relay\Exceptions\InvalidWebhookPayloadException;
 
-class ExampleJob implements ShouldQueue
+public function __invoke(Request $request)
 {
-    use Queueable;
+    try {
+        Relay::request($request)
+            ->provider('stripe')
+            ->guard(StripeWebhookGuard::class)
+            ->event(fn ($payload) => $this->handleEvent($payload));
 
-    public $tries = 5;                 // or use retryUntil()
-    public function backoff() { return [60, 300]; }  // progressive (seconds)
-    public function middleware() { return [ new RateLimited('partner-api') ]; }
-
-    public function handle() {
-        // job logic
+        return response()->json(['message' => 'ok']);
+    } catch (InvalidWebhookHeadersException $exception) {
+        return response()->json(['message' => 'Forbidden'], 403);
+    } catch (InvalidWebhookPayloadException $exception) {
+        return response()->json(['message' => $exception->getMessage()], 422);
     }
 }
-
-// Call site (returns native PendingDispatch):
-Relay::request($request)->dispatch(new ExampleJob($request->all()))->onQueue('default');
 ```
-
-**Behavior**
-- All job-level Laravel features work normally; Atlas only **records lifecycle**.
 
 ---
 
-## 3) Chaining Jobs via Atlas (Bus::chain)
+## 1.3 Basic Guard Class Example
 
 ```php
-use Illuminate\Support\Facades\Bus;
+use Atlas\Relay\Guards\BaseInboundRequestGuard;
+use Atlas\Relay\Support\InboundRequestGuardContext;
 
-Relay::request($request)
-    ->dispatchChain([                 // thin wrapper that proxies to Bus::chain(...)->dispatch()
-        new PrepareDataJob($payload),
-        new DeliverToPartnerJob(),
-        new NotifyDownstreamJob(),
-    ])->onConnection('redis')->onQueue('pipeline');
+class StripeWebhookGuard extends BaseInboundRequestGuard
+{
+    public function validate(InboundRequestGuardContext $context): void
+    {
+        $context->requireHeader('Stripe-Signature', env('STRIPE_WEBHOOK_SIGNATURE'));
+        $context->requireHeader('X-Relay-Request');
+        
+        // laravel validator example:
+        $context->validatePayload([
+            'id' => ['required', 'string'],
+            'type' => ['required', 'string'],
+            'event.order.id' => ['required', 'string'],
+        ]);
+    }
+}
 ```
-
-**Behavior**
-- Returns Laravel’s native chain handle (so you can set `connection`/`queue`).
-- Atlas observes the chain completion/failure and updates the relay accordingly.
 
 ---
 
-## 4) Direct HTTP (for reference)
+## 1.4 Advanced Guard Example (with Commentary)
+
+```php
+use Atlas\Relay\Exceptions\InvalidWebhookHeadersException;
+use Atlas\Relay\Exceptions\InvalidWebhookPayloadException;
+use Atlas\Relay\Guards\BaseInboundRequestGuard;
+use Atlas\Relay\Support\InboundRequestGuardContext;
+use App\Models\Tenant;
+
+class TenantWebhookGuard extends BaseInboundRequestGuard
+{
+    public function validate(InboundRequestGuardContext $context): void
+    {
+        // 1. Inspect raw header directly
+        $signature = $context->header('X-Tenant-Signature');
+
+        if ($signature === null) {
+            // Custom failure explaining EXACTLY why request is rejected
+            $context->failHeaders(['Tenant signature header missing.']);
+        }
+
+        // 2. Pull tenant ID from payload
+        $tenantId = data_get($context->payload(), 'meta.tenant_id');
+
+        // Check tenant existence in your own system
+        $tenant = Tenant::query()->find($tenantId);
+
+        if (! $tenant) {
+            // Fail with detailed, audit‑friendly explanation
+            $context->failPayload([sprintf('Unknown tenant id [%s].', $tenantId ?? 'null')]);
+        }
+
+        // 3. Validate signature matches tenant secret
+        if (! hash_equals($tenant->secret, $signature)) {
+            throw InvalidWebhookHeadersException::fromViolations(
+                'TenantWebhookGuard',
+                ['Signature mismatch for tenant.']
+            );
+        }
+
+        return;
+    }
+}
+```
+
+**Why this matters:**
+
+- Demonstrates **header + payload + model validation** in one guard
+- Shows **how to create meaningful audit logs**
+- Shows **when to use helpers vs exceptions**
+- Models real multi‑tenant webhook security patterns
+
+---
+
+# 2. Dispatching Jobs
+
+```php
+$pending = Relay::request($request)
+    ->dispatch(new ExampleJob($request->all()));
+
+$pending->onQueue('critical')
+    ->onConnection('redis')
+    ->delay(now()->addMinutes(5));
+```
+
+---
+
+# 3. Chaining Jobs
+
+```php
+Relay::request($request)
+    ->dispatchChain([
+        new PrepareDataJob(),
+        new DeliverToPartnerJob(),
+        new NotifyDownstreamJob(),
+    ])
+    ->onQueue('pipeline');
+```
+
+---
+
+# 4. Direct HTTP
 
 ```php
 Relay::http()
     ->withHeaders(['X-App' => 'Atlas'])
-    ->timeout(30)        // Laravel HTTP client timeout (seconds)
-    ->retry(3, 2000)     // Laravel transport-level retry (ms delay)
+    ->timeout(30)
+    ->retry(3, 2000)
     ->post('https://api.partner.com/receive', $data);
 ```
 
-**Behavior**
-- Delegates to Laravel’s `Http` under the hood; **all client features** available.
-- Atlas intercepts first, records payload/method/URL plus `response_http_status`/`response_payload`, then returns the response.
-- Lifecycle tracking is managed via relay lifecycle services; additional retries must be implemented by the consuming app.
+---
+
+# 5. Accessing Relay in Jobs
+
+```php
+use Atlas\Relay\Support\RelayJobHelper;
+
+class ExampleJob implements ShouldQueue
+{
+    public function handle()
+    {
+        $relay = app(RelayJobHelper::class)->relay();
+    }
+}
+```
 
 ---
 
-## Notes
+This document centralizes **all usage examples**.  
 
-- Atlas **dispatch/dispatchChain** helpers are **thin wrappers** that return the **same Laravel types** you expect and preserve **all Laravel controls**.
-- Atlas **never** forces new base classes or job signatures.
-- Lifecycle and error mapping happen **automatically** (and are written to the relay record and logs).
+For inbound rules, see **[PRD — Receive Webhook Relay](./PRD-Receive-Webhook-Relay.md)**.  
+
+For outbound rules, see **[PRD — Send Webhook Relay](./PRD-Send-Webhook-Relay.md)**.
