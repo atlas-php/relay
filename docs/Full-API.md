@@ -1,171 +1,127 @@
-# Atlas Relay — Public API Reference
-This document lists **all public APIs** exposed by Atlas Relay.  
-It aims to be **exhaustive, minimal, and strictly focused on method availability**, not examples.
+# Atlas Relay Full API Reference
 
-For lifecycle rules, schema, and functional behavior, see:
-- **[Atlas Relay](./PRD/Atlas-Relay.md)**
-- **[Receive Webhook Relay](./PRD/Receive-Webhook-Relay.md)**
-- **[Send Webhook Relay](./PRD/Send-Webhook-Relay.md)**
+This document provides a complete reference of all **public APIs** exposed by Atlas Relay. It is focused solely on method availability and signatures. Behavioral rules, lifecycle semantics, and schema definitions are documented in the corresponding PRDs.
 
----
+## Table of Contents
+- [Facade Entrypoint](#facade-entrypoint)
+- [Manager-Level Public API](#manager-level-public-api)
+- [RelayBuilder API](#relaybuilder-api)
+- [Delivery API](#delivery-api)
+- [Lifecycle & Delivery Services](#lifecycle--delivery-services)
+- [Models](#models)
+- [Console Commands](#console-commands)
+- [Enums & Exceptions](#enums--exceptions)
 
-# 1. Facade Entrypoint
+## Facade Entrypoint
+### Atlas\Relay\Facades\Relay
+Central access point for creating and managing all relay types.
 
-### `Atlas\Relay\Facades\Relay`
-Central access point for creating and managing relays.
-
----
-
-# 2. Manager-Level Public API
-Resolved via the Relay facade.
-
+## Manager-Level Public API
 | Method             | Signature                                   | Purpose                                           |
 |--------------------|---------------------------------------------|---------------------------------------------------|
-| `request()`        | `request(Request $request): RelayBuilder`   | Begin an **inbound** relay from an HTTP request.  |
+| `request()`        | `request(Request $request): RelayBuilder`   | Begin an inbound relay from an HTTP request.      |
 | `payload()`        | `payload(mixed $payload): RelayBuilder`     | Begin a relay from raw payload (system/internal). |
 | `type()`           | `type(RelayType $type): RelayBuilder`       | Override inferred relay type.                     |
 | `provider()`       | `provider(?string $provider): RelayBuilder` | Tag the relay with an integration key.            |
-| `setReferenceId()` | `setReferenceId(?string $id): RelayBuilder` | Attach a reference ID (order ID, etc.).           |
+| `setReferenceId()` | `setReferenceId(?string $id): RelayBuilder` | Attach a reference ID.                            |
 | `guard()`          | `guard(?string $guardClass): RelayBuilder`  | Apply an inbound guard class.                     |
-| `http()`           | `http(): RelayHttpClient`                   | Begin an **outbound** HTTP relay.                 |
+| `http()`           | `http(): RelayHttpClient`                   | Begin an outbound HTTP relay.                     |
 | `cancel()`         | `cancel(Relay $relay): Relay`               | Mark relay as cancelled.                          |
 
----
-
-# 3. RelayBuilder API
+## RelayBuilder API
 Returned from `Relay::request()`, `Relay::payload()`, etc.
 
-## 3.1 Configuration Methods
-
+### Configuration Methods
 | Method              | Signature                                                       | Purpose                                     |
 |---------------------|-----------------------------------------------------------------|---------------------------------------------|
 | `payload()`         | `payload(mixed $payload)`                                       | Override or define relay payload.           |
-| `meta()`            | `meta(mixed $meta)`                                             | Store custom metadata array/JSON.           |
+| `meta()`            | `meta(mixed $meta)`                                             | Store custom metadata.                      |
 | `type()`            | `type(RelayType $type)`                                         | Set relay type explicitly.                  |
 | `provider()`        | `provider(?string)`                                             | Override provider.                          |
 | `setReferenceId()`  | `setReferenceId(?string)`                                       | Override reference ID.                      |
 | `guard()`           | `guard(?string)`                                                | Attach inbound guard.                       |
 | `status()`          | `status(RelayStatus $status)`                                   | Set initial status (rare).                  |
-| `validationError()` | `validationError(string $field, string $message)`               | Store validation error info before capture. |
-| `failWith()`        | `failWith(RelayFailure $failure, RelayStatus $status = FAILED)` | Force capture to start in failed state.     |
+| `validationError()` | `validationError(string $field, string $message)`               | Store validation error before capture.      |
+| `failWith()`        | `failWith(RelayFailure $failure, RelayStatus $status = FAILED)` | Force initial failure state.                |
 
-## 3.2 Capture + Inspection
-
+### Capture & Inspection
 | Method      | Signature                 | Purpose                         |
 |-------------|---------------------------|---------------------------------|
 | `capture()` | `capture(): Relay`        | Persist relay immediately.      |
 | `relay()`   | `relay(): ?Relay`         | Get last persisted relay.       |
 | `context()` | `context(): RelayContext` | Get immutable capture snapshot. |
 
----
+## Delivery API
+Delivery covers events, jobs, and HTTP execution.
 
-# 4. Delivery API (Event / Jobs / HTTP)
-
-## 4.1 Event Execution
-
+### Event Execution
 | Method    | Signature                          | Purpose                                            |
 |-----------|------------------------------------|----------------------------------------------------|
-| `event()` | `event(callable $callback): mixed` | Perform synchronous execution and track lifecycle. |
+| `event()` | `event(callable $callback): mixed` | Perform synchronous execution with lifecycle.      |
 
-## 4.2 Job Dispatching
-
+### Job Dispatching
 | Method            | Signature                                  | Purpose                                                 |
 |-------------------|--------------------------------------------|---------------------------------------------------------|
-| `dispatch()`      | `dispatch(mixed $job): PendingDispatch`    | Dispatch a job with automatic relay lifecycle handling. |
-| `dispatchChain()` | `dispatchChain(array $jobs): PendingChain` | Dispatch a job chain with lifecycle propagation.        |
+| `dispatch()`      | `dispatch(mixed $job): PendingDispatch`    | Dispatch job with lifecycle handling.                   |
+| `dispatchChain()` | `dispatchChain(array $jobs): PendingChain` | Dispatch job chain with lifecycle propagation.          |
 
-## 4.3 HTTP Execution (Outbound)
+### HTTP Execution (Outbound)
+Available through `RelayHttpClient`.
 
-Available through **RelayHttpClient**, returned by `Relay::http()`.
+Supported verbs:
+- `get()`
+- `post()`
+- `put()`
+- `patch()`
+- `delete()`
 
-### HTTP Verbs
-All Laravel HTTP verbs pass through:
-
-- `get(string $url)`
-- `post(string $url, array|string|null $payload)`
-- `put(string $url, array|string|null $payload)`
-- `patch(string $url, array|string|null $payload)`
-- `delete(string $url, array|string|null $payload)`
-
-### Request Configuration (Laravel-native)
-The following methods are transparently proxied:
-
-- `withHeaders(array $headers)`
-- `timeout(int $seconds)`
-- `retry(int $times, int $sleepMs)`
-- `accept(string)`
+Request configuration (proxied from Laravel):
+- `withHeaders()`
+- `timeout()`
+- `retry()`
+- `accept()`
 - `asJson()`
-- `attach(...)`
-- All other `PendingRequest` configurators
+- `attach()`
+- All other PendingRequest methods
 
----
+## Lifecycle & Delivery Services
+Internal services that remain publicly accessible.
 
-# 5. Lifecycle & Delivery Services (Public)
+| Service                 | Methods                                                                                                          | Purpose                |
+|-------------------------|------------------------------------------------------------------------------------------------------------------|------------------------|
+| `RelayDeliveryService`  | `executeEvent()`, `http()`, `dispatch()`, `dispatchChain()`, `runQueuedEventCallback()`                          | Orchestrates delivery. |
+| `RelayLifecycleService` | `startAttempt()`, `markCompleted()`, `markFailed()`, `recordResponse()`, `recordExceptionResponse()`, `cancel()` | Lifecycle transitions. |
+| `RelayCaptureService`   | `capture()`                                                                                                      | Low-level persistence. |
 
-While resolved internally, these services are publicly accessible for extension.
-
-| Service                 | Public Methods                                                                                                   | Purpose                                         |
-|-------------------------|------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| `RelayDeliveryService`  | `executeEvent()`, `http()`, `dispatch()`, `dispatchChain()`, `runQueuedEventCallback()`                          | Orchestrates execution & lifecycle transitions. |
-| `RelayLifecycleService` | `startAttempt()`, `markCompleted()`, `markFailed()`, `recordResponse()`, `recordExceptionResponse()`, `cancel()` | Low-level lifecycle controls.                   |
-| `RelayCaptureService`   | `capture()`                                                                                                      | Low-level persistence used by builder.          |
-
-Full semantics:  
-**[Atlas Relay](./PRD/Atlas-Relay.md)**
-
----
-
-# 6. Models
-
+## Models
 | Model                             | Purpose                |
 |-----------------------------------|------------------------|
 | `Atlas\Relay\Models\Relay`        | Live relay records     |
 | `Atlas\Relay\Models\RelayArchive` | Archived relay records |
 
-Both conform to the unified schema defined in:  
-**[Relay Data Model](./PRD/Atlas-Relay.md#2-relay-data-model-full-field-specification)**
-
----
-
-# 7. Console Commands
-
+## Console Commands
 | Command                          | Purpose                         |
 |----------------------------------|---------------------------------|
 | `atlas-relay:archive`            | Archive completed/failed relays |
 | `atlas-relay:purge-archives`     | Purge expired archives          |
-| `atlas-relay:relay:inspect {id}` | Inspect live or archived relay  |
+| `atlas-relay:relay:inspect {id}` | Inspect relay (live/archived)   |
 | `atlas-relay:relay:restore {id}` | Restore archive → live          |
 
-Details:  
-**[Archiving & Logging](./PRD/Archiving-and-Logging.md)**
+## Enums & Exceptions
+### Enums
+- `RelayType`
+- `RelayStatus`
+- `RelayFailure`
 
----
-
-# 8. Enums & Exceptions
-
-## 8.1 Enums
-
-| Enum           | Values                                           | Purpose                 |
-|----------------|--------------------------------------------------|-------------------------|
-| `RelayType`    | INBOUND, OUTBOUND, RELAY                         | Defines relay intent    |
-| `RelayStatus`  | QUEUED, PROCESSING, COMPLETED, FAILED, CANCELLED | Lifecycle states        |
-| `RelayFailure` | All canonical failure codes                      | Unified error semantics |
-
-Full failure list:  
-**[Failure Codes](./PRD/Atlas-Relay.md#3-failure-reason-enum-complete-spec)**
-
-## 8.2 Exceptions
-
+### Exceptions
 - `InvalidWebhookHeadersException`
 - `InvalidWebhookPayloadException`
 - `RelayHttpException`
 - `RelayJobFailedException`
 
-Used according to flow-specific rules:
-- Inbound → **Receive Webhook PRD**
-- Outbound → **Send Webhook PRD**
-
----
-
-This reference represents the **complete public API surface** of Atlas Relay.  
-All behavioral logic is defined in the PRDs linked above.
+## Also See
+- [Atlas Relay](./PRD/Atlas-Relay.md)
+- [Receive Webhook Relay](./PRD/Receive-Webhook-Relay.md)
+- [Send Webhook Relay](./PRD/Send-Webhook-Relay.md)
+- [Archiving & Logging](./PRD/Archiving-and-Logging.md)
+- [Example Usage](./PRD/Example-Usage.md)
