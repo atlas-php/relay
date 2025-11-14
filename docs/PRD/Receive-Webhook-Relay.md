@@ -12,13 +12,12 @@ Atlas Relay defines the rules for receiving, validating, normalizing, and captur
 - [Usage Link](#usage-link)
 
 ## High-Level Flow
-HTTP Request → Guard (optional) → Normalize → Capture → Event/Dispatch/HTTP
+HTTP Request → Guard (optional) → Normalize → Capture → Event/Dispatch
 
 1. Receive request
 2. Normalize headers, payload, method, URL, IP
 3. Run guard validation
 4. Capture relay
-5. Forward to delivery (see **Send Webhook Relay**)
 
 ## Guarding
 Guards may:
@@ -48,8 +47,6 @@ Atlas Relay must:
 - Truncate oversized payloads (`payload_max_bytes`)
 - Store inbound failure codes where applicable
 - Persist the relay **before** any downstream logic
-
-Full capture + delivery examples live in **Example Usage**.
 
 ## Schema (Inbound Fields)
 
@@ -108,8 +105,6 @@ class ExampleGuard extends BaseInboundRequestGuard
     }
 }
 ```
-
-More end-to-end inbound examples are available in the **Example Usage** documentation.
 
 ## Usage Link
 See **[Example Usage](./Example-Usage.md)** for complete inbound handling examples.

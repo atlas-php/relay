@@ -4,11 +4,12 @@ Atlas Relay defines how outbound webhooks are constructed, configured, executed,
 
 ## Table of Contents
 - [High-Level Flow](#high-level-flow)
-- [Outbound Model](#outbound-model)
 - [Using Relay::http()](#using-relayhttp)
 - [HTTP Execution Behavior](#http-execution-behavior)
 - [Failure Handling](#failure-handling)
+- [Examples](#examples)
 - [Lifecycle Rules](#lifecycle-rules)
+- [Usage Link](#usage-link)
 
 ## High-Level Flow
 Relay::http() → Configure → Send → Record Response → Complete/Fail
@@ -18,13 +19,6 @@ Relay::http() → Configure → Send → Record Response → Complete/Fail
 3. Execute HTTP verb (post/get/etc.)
 4. Record request + response lifecycle fields
 5. Mark Completed or Failed
-
-## Outbound Model
-- Always use `OUTBOUND` type
-- Are captured automatically upon HTTP execution
-- Store full request + response details
-
-All lifecycle fields come from the Atlas Relay schema.
 
 ## Using Relay::http()
 
@@ -59,26 +53,53 @@ Relay::provider('stripe')
     - payload
     - response status
     - response body (truncated)
-- HTTP options such as `timeout()`, `retry()`, `acceptJson()` are fully supported
+- Supported HTTP options: `timeout()`, `retry()`, `acceptJson()`, and more
 
-Full outbound delivery logic is covered in **Example Usage**.
+Full outbound examples are available in **Example Usage**.
 
 ## Failure Handling
-Mapped failure codes:
 
-| Scenario                | Failure Code       |
-|-------------------------|--------------------|
-| Non‑2xx response        | HTTP_ERROR         |
-| Network/DNS/SSL failure | CONNECTION_ERROR   |
-| HTTP timeout            | CONNECTION_TIMEOUT |
-| Payload too large       | PAYLOAD_TOO_LARGE  |
+| Scenario                | Failure Code        |
+|-------------------------|---------------------|
+| Non‑2xx response        | HTTP_ERROR          |
+| Network/DNS/SSL failure | CONNECTION_ERROR    |
+| HTTP timeout            | CONNECTION_TIMEOUT  |
+| Payload too large       | PAYLOAD_TOO_LARGE   |
+
+## Examples
+
+### Simple Outbound Send
+```php
+Relay::http()->post('https://api.partner.com/events', [
+    'type' => 'user.updated',
+]);
+```
+
+### Outbound With Retries
+```php
+Relay::http()
+    ->retry(3, 500)
+    ->post('https://hooks.example.com/ingest', $payload);
+```
+
+### Outbound With Additional HTTP Options
+```php
+Relay::http()
+    ->timeout(10)
+    ->acceptJson()
+    ->withHeaders(['X-App' => 'Atlas'])
+    ->post('https://hooks.example.com/run', $payload);
+```
 
 ## Lifecycle Rules
 - Starts in **Queued**
 - Moves to **Processing** when HTTP begins
 - **Completed** on success
-- **Failed** on exception or failing status codes
+- **Failed** on exception or error codes
 - `completed_at` always set
+
+## Usage Link
+See **[Example Usage](./Example-Usage.md)** for full outbound usage examples.
 
 ## Also See
 - [Atlas Relay](./Atlas-Relay.md)
