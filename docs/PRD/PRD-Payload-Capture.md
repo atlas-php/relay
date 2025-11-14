@@ -16,14 +16,14 @@ Payload Capture is the first stage of Atlas Relay. It records every inbound payl
 | `headers`              | Normalized header JSON.                                 |
 | `payload`              | Stored JSON payload.                                    |
 | `status`               | Enum: Queued, Processing, Completed, Failed, Cancelled. |
-| `mode`                 | event, dispatch, autoroute, direct.                     |
+| `mode`                 | event, dispatch, dispatch_chain, http.                  |
 | `failure_reason`       | Enum for capture or downstream failure.                 |
 | `response_http_status` | HTTP status of last outbound request.                   |
 | `response_payload`     | Truncated last HTTP response body.                      |
 | `attempts`             | Number of processing attempts executed.                 |
 | `next_retry_at`        | Next retry timestamp.                                   |
 | `method`               | HTTP verb captured for inbound/outbound delivery.       |
-| `url`                  | Normalized route or destination URL applied everywhere. |
+| `url`                  | Normalized destination URL applied everywhere.          |
 | `processing_at`        | When the current attempt began processing.              |
 | `completed_at`         | When the relay finished (success, failure, or cancel).  |
 | `created_at`           | Capture timestamp.                                      |
@@ -35,9 +35,9 @@ Payload Capture is the first stage of Atlas Relay. It records every inbound payl
 |------|-----------------------|-----------------------------------------------------------|
 | 100  | EXCEPTION             | Uncaught exception.                                       |
 | 101  | PAYLOAD_TOO_LARGE     | Payload exceeds 64KB.                                     |
-| 102  | NO_ROUTE_MATCH        | No route match.                                           |
+| 102  | NO_ROUTE_MATCH        | Legacy code (reserved).                                   |
 | 103  | CANCELLED             | Manually cancelled.                                       |
-| 104  | ROUTE_TIMEOUT         | Routing timeout.                                          |
+| 104  | ROUTE_TIMEOUT         | Processing timeout.                                       |
 | 105  | INVALID_PAYLOAD       | JSON decode failure.                                      |
 | 108  | FORBIDDEN_GUARD       | Provider guard rejected the request before processing.    |
 | 201  | HTTP_ERROR            | Non‑2xx response.                                         |

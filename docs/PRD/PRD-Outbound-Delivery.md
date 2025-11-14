@@ -44,7 +44,7 @@ Outbound Delivery wraps Laravel’s built‑in `Http` and job dispatching:
 
 ### HTTP
 - Uses configured method; payload from `atlas_relays.payload`.
-- Merges relay/route/domain headers.
+- Merges relay-provided headers.
 - HTTPS required; redirects limited to 3; host changes blocked.
 - Relay records:
     - `response_http_status`
@@ -65,18 +65,16 @@ Outbound Delivery wraps Laravel’s built‑in `Http` and job dispatching:
 
 ## Retry, Delay & Timeout
 
-Execution is controlled by the associated AutoRoute definition:
+Execution is governed by inline relay fields plus automation config:
 
-- Retries: `is_retry`, `retry_seconds`, `retry_max_attempts`
-- Delays: `is_delay`, `delay_seconds`
-- Timeouts: `timeout_seconds`, `http_timeout_seconds`
+- Applications decide when to schedule retries by setting `next_retry_at` and optionally incrementing counters.
+- `atlas-relay:retry-overdue` clears the failure state and requeues relays whose `next_retry_at` is past due.
+- `atlas-relay:enforce-timeouts` marks `processing` relays as failed after `automation.processing_timeout_seconds` (+ optional buffer) elapses.
 
 Rules:
-- Delays apply only to the first attempt.
-- Retries scheduled with `next_retry_at`.
-- Timeouts apply to total execution time.
-- Previous failure details cleared on retry.
-- Manual relays without a `route_id` skip these automation concepts.
+- Delays are modeled by setting `next_retry_at` in the future.
+- Retries always clear `response_*` data before the next attempt; lifecycle services increment `attempts`.
+- Timeout enforcement only runs when `processing_at` exists and the configured window is exceeded.
 
 ---
 
@@ -97,9 +95,9 @@ Rules:
 |------|-----------------------|--------------------------|
 | 100  | EXCEPTION             | Uncaught exception       |
 | 101  | PAYLOAD_TOO_LARGE     | Payload >64KB            |
-| 102  | NO_ROUTE_MATCH        | No route match           |
+| 102  | NO_ROUTE_MATCH        | Legacy code (reserved).  |
 | 103  | CANCELLED             | Manually cancelled       |
-| 104  | ROUTE_TIMEOUT         | Route resolution timeout |
+| 104  | ROUTE_TIMEOUT         | Processing timeout.      |
 | 201  | HTTP_ERROR            | Non‑2xx                  |
 | 203  | TOO_MANY_REDIRECTS    | >3 redirects             |
 | 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch   |
@@ -109,7 +107,7 @@ Rules:
 ---
 
 ## Observability
-All outbound attempts, responses, retries, timings, and failures are recorded directly in the `atlas_relays` table. Configuration for retries/delays/timeouts is resolved dynamically from the `atlas_relay_routes` entry referenced by each relay.
+All outbound attempts, responses, retries, timings, and failures are recorded directly in the `atlas_relays` table. Automation derives thresholds from the relay record plus the `automation.*` config values.
 
 ---
 

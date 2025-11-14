@@ -28,36 +28,30 @@ class EnforceRelayTimeoutsCommand extends Command
     {
         $chunkSize = (int) $this->option('chunk');
         $bufferSeconds = (int) config('atlas-relay.automation.timeout_buffer_seconds', 0);
+        $timeoutSeconds = (int) config('atlas-relay.automation.processing_timeout_seconds', 0);
+
+        if ($timeoutSeconds <= 0) {
+            $this->info(
+                'Processing timeout enforcement disabled; set atlas-relay.automation.processing_timeout_seconds to enable.'
+            );
+
+            return self::SUCCESS;
+        }
 
         $count = 0;
 
         Relay::query()
             ->where('status', RelayStatus::PROCESSING->value)
             ->whereNotNull('processing_at')
-            ->with([
-                'route:id,timeout_seconds,http_timeout_seconds',
-            ])
             ->orderBy('id')
-            ->chunkById($chunkSize, function ($relays) use (&$count, $lifecycle, $bufferSeconds): void {
+            ->chunkById($chunkSize, function ($relays) use (&$count, $lifecycle, $bufferSeconds, $timeoutSeconds): void {
                 foreach ($relays as $relay) {
-                    $route = $relay->route;
-
-                    if ($route === null) {
-                        continue;
-                    }
-
-                    $timeout = $route->timeout_seconds ?? $route->http_timeout_seconds;
-
-                    if ($timeout === null || $timeout <= 0) {
-                        continue;
-                    }
-
                     if (! $relay->processing_at instanceof \DateTimeInterface) {
                         continue;
                     }
 
                     $deadline = Carbon::parse($relay->processing_at)
-                        ->addSeconds($timeout + $bufferSeconds);
+                        ->addSeconds($timeoutSeconds + $bufferSeconds);
 
                     if ($deadline->isPast()) {
                         $lifecycle->markFailed($relay, RelayFailure::ROUTE_TIMEOUT);

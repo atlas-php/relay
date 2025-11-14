@@ -17,7 +17,6 @@ return new class extends Migration
         $this->schema()->create($tableName, function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('mode', 32)->nullable();
-            $table->unsignedBigInteger('route_id')->nullable();
             $table->string('reference_id', 191)->nullable();
             $table->unsignedTinyInteger('status')->default(RelayStatus::QUEUED->value);
             $table->string('source_ip', 15)->nullable();
@@ -37,7 +36,6 @@ return new class extends Migration
 
             $table->index('status');
             $table->index('next_retry_at');
-            $table->index('route_id');
             $table->index('provider');
             $table->index('reference_id');
         });

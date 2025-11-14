@@ -8,7 +8,6 @@ use Atlas\Relay\Console\Commands\ArchiveRelaysCommand;
 use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Models\RelayArchive;
-use Atlas\Relay\Models\RelayRoute;
 use Atlas\Relay\Services\RelayLifecycleService;
 use Atlas\Relay\Tests\TestCase;
 use Carbon\Carbon;
@@ -42,7 +41,7 @@ class AutomationCommandsTest extends TestCase
             'headers' => [],
             'payload' => [],
             'status' => RelayStatus::FAILED,
-            'mode' => 'auto_route',
+            'mode' => 'event',
             'next_retry_at' => Carbon::now()->subMinute(),
         ]);
 
@@ -112,25 +111,16 @@ class AutomationCommandsTest extends TestCase
 
     public function test_enforce_timeouts_marks_relays_failed(): void
     {
-        $route = RelayRoute::query()->create([
-            'identifier' => 'timeout',
-            'method' => 'POST',
-            'path' => '/timeouts',
-            'type' => 'http',
-            'url' => 'https://example.com/timeout',
-            'timeout_seconds' => 60,
-            'enabled' => true,
-        ]);
-
         $relay = Relay::query()->create([
             'source_ip' => '127.0.0.1',
             'headers' => [],
             'payload' => [],
             'status' => RelayStatus::PROCESSING,
             'mode' => 'http',
-            'route_id' => $route->id,
             'processing_at' => Carbon::now()->subMinutes(5),
         ]);
+
+        config()->set('atlas-relay.automation.processing_timeout_seconds', 60);
 
         $this->runPendingCommand('atlas-relay:enforce-timeouts')->assertExitCode(0);
 

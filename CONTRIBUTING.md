@@ -14,7 +14,6 @@ each subsystem:
 |----------------------------------------------------------------------|----------------------------------------------------------------------------|
 | [PRD-Atlas-Relay](./docs/PRD/PRD-Atlas-Relay.md)                     | End-to-end lifecycle overview, automation cadence, and domain terminology. |
 | [PRD-Payload-Capture](./docs/PRD/PRD-Payload-Capture.md)             | Request ingestion, validation, storage schema, and capture constraints.    |
-| [PRD-Routing](./docs/PRD/PRD-Routing.md)                             | Auto-routing configuration, providers, caching, and failure handling.      |
 | [PRD-Outbound-Delivery](./docs/PRD/PRD-Outbound-Delivery.md)         | HTTP/event/dispatch delivery modes, retries, and timeout semantics.        |
 | [PRD-Archiving-and-Logging](./docs/PRD/PRD-Archiving-and-Logging.md) | Retention, archive schema, purge automation, and observability mandates.   |
 | [PRD-Example-Usage](./docs/PRD/PRD-Example-Usage.md)                 | Canonical developer workflows and API usage patterns.                      |

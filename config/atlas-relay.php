@@ -5,7 +5,6 @@ declare(strict_types=1);
 return [
     'tables' => [
         'relays' => 'atlas_relays',
-        'relay_routes' => 'atlas_relay_routes',
         'relay_archives' => 'atlas_relay_archives',
     ],
 
@@ -32,11 +31,6 @@ return [
         ],
     ],
 
-    'routing' => [
-        'cache_ttl_seconds' => env('ATLAS_RELAY_ROUTE_CACHE_SECONDS', 1200),
-        'cache_store' => env('ATLAS_RELAY_ROUTE_CACHE_STORE'),
-    ],
-
     'http' => [
         'max_redirects' => env('ATLAS_RELAY_MAX_REDIRECTS', 3),
         'enforce_https' => env('ATLAS_RELAY_ENFORCE_HTTPS', true),
@@ -45,6 +39,7 @@ return [
     'automation' => [
         'stuck_threshold_minutes' => env('ATLAS_RELAY_STUCK_THRESHOLD_MINUTES', 10),
         'timeout_buffer_seconds' => env('ATLAS_RELAY_TIMEOUT_BUFFER_SECONDS', 0),
+        'processing_timeout_seconds' => env('ATLAS_RELAY_PROCESSING_TIMEOUT_SECONDS'),
     ],
 
     'inbound' => [

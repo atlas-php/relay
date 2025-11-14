@@ -7,51 +7,15 @@ namespace Atlas\Relay\Tests\Feature;
 use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Models\RelayArchive;
-use Atlas\Relay\Models\RelayRoute;
 use Atlas\Relay\Tests\TestCase;
-use Illuminate\Support\Facades\File;
 
 /**
- * Exercises developer tooling commands for seeding routes, inspecting relays, and restoring archives.
+ * Exercises developer tooling commands for inspecting relays and restoring archives.
  *
- * Defined by PRD: Auto Routing — Route Definitions; Archiving & Logging — Archiving Process and Notes on restoration.
+ * Defined by PRD: Archiving & Logging — Archiving Process and Notes on restoration.
  */
 class DxCommandsTest extends TestCase
 {
-    public function test_route_seed_command_creates_routes(): void
-    {
-        $path = tempnam(sys_get_temp_dir(), 'routes');
-        if ($path === false) {
-            self::fail('Unable to create temporary route definition file.');
-        }
-
-        $json = json_encode([
-            [
-                'identifier' => 'orders',
-                'method' => 'POST',
-                'path' => '/orders',
-                'type' => 'http',
-                'url' => 'https://example.com/orders',
-            ],
-        ]);
-
-        if ($json === false) {
-            self::fail('Unable to encode route definitions to JSON.');
-        }
-
-        File::put($path, $json);
-
-        $this->runPendingCommand('atlas-relay:routes:seed', [
-            'file' => $path,
-            '--replace' => true,
-        ])->assertExitCode(0);
-
-        $this->assertDatabaseHas((new RelayRoute)->getTable(), [
-            'identifier' => 'orders',
-            'path' => '/orders',
-        ]);
-    }
-
     public function test_inspect_command_outputs_relay_state(): void
     {
         $relay = Relay::query()->create([

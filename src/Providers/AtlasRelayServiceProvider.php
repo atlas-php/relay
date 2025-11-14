@@ -11,12 +11,9 @@ use Atlas\Relay\Console\Commands\PurgeRelayArchivesCommand;
 use Atlas\Relay\Console\Commands\RequeueStuckRelaysCommand;
 use Atlas\Relay\Console\Commands\RestoreRelayCommand;
 use Atlas\Relay\Console\Commands\RetryOverdueRelaysCommand;
-use Atlas\Relay\Console\Commands\SeedRelayRoutesCommand;
 use Atlas\Relay\Contracts\RelayManagerInterface;
 use Atlas\Relay\Models\Relay;
-use Atlas\Relay\Models\RelayRoute;
 use Atlas\Relay\RelayManager;
-use Atlas\Relay\Routing\Router;
 use Atlas\Relay\Services\InboundGuardService;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
@@ -24,7 +21,6 @@ use Atlas\Relay\Services\RelayLifecycleService;
 use Atlas\Relay\Support\RelayJobContext;
 use Atlas\Relay\Support\RelayJobHelper;
 use Atlas\Relay\Support\RequestPayloadExtractor;
-use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -36,20 +32,6 @@ class AtlasRelayServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/atlas-relay.php', 'atlas-relay');
-
-        $this->app->singleton(Router::class, function ($app): Router {
-            $cacheFactory = $app->make(CacheFactory::class);
-            $cacheStore = config('atlas-relay.routing.cache_store');
-            $cacheRepository = $cacheStore ? $cacheFactory->store($cacheStore) : $cacheFactory->store();
-
-            return new Router(
-                $cacheRepository,
-                new RelayRoute,
-                (int) config('atlas-relay.routing.cache_ttl_seconds', 1200)
-            );
-        });
-
-        $this->app->alias(Router::class, 'atlas-relay.router');
 
         $this->app->singleton(RequestPayloadExtractor::class, RequestPayloadExtractor::class);
         $this->app->singleton(RelayCaptureService::class, function ($app): RelayCaptureService {
@@ -68,14 +50,6 @@ class AtlasRelayServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
-        RelayRoute::saved(function (): void {
-            $this->app->make(Router::class)->flushCache();
-        });
-
-        RelayRoute::deleted(function (): void {
-            $this->app->make(Router::class)->flushCache();
-        });
-
         if ($this->app->runningInConsole()) {
             $this->commands([
                 RetryOverdueRelaysCommand::class,
@@ -85,7 +59,6 @@ class AtlasRelayServiceProvider extends ServiceProvider
                 PurgeRelayArchivesCommand::class,
                 RestoreRelayCommand::class,
                 InspectRelayCommand::class,
-                SeedRelayRoutesCommand::class,
             ]);
 
             $this->publishes([

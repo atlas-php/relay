@@ -10,10 +10,6 @@ use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Exceptions\ForbiddenWebhookException;
 use Atlas\Relay\Exceptions\InvalidWebhookPayloadException;
 use Atlas\Relay\Models\Relay;
-use Atlas\Relay\Routing\RouteContext as RoutingContext;
-use Atlas\Relay\Routing\Router;
-use Atlas\Relay\Routing\RouteResult;
-use Atlas\Relay\Routing\RoutingException;
 use Atlas\Relay\Services\InboundGuardService;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
@@ -52,13 +48,7 @@ class RelayBuilder
 
     private ?Relay $capturedRelay = null;
 
-    private ?RouteResult $routeResult = null;
-
     private RequestPayloadExtractor $payloadExtractor;
-
-    private ?string $resolvedMethod = null;
-
-    private ?string $resolvedUrl = null;
 
     private ?string $provider = null;
 
@@ -74,7 +64,6 @@ class RelayBuilder
 
     public function __construct(
         private readonly RelayCaptureService $captureService,
-        private readonly Router $router,
         private readonly RelayDeliveryService $deliveryService,
         private readonly RelayLifecycleService $lifecycleService,
         private readonly InboundGuardService $guardService,
@@ -157,10 +146,8 @@ class RelayBuilder
      */
     public function context(): RelayContext
     {
-        $capturedMethod = $this->resolvedMethod
-            ?? HttpMethod::tryFromMixed($this->request?->getMethod())?->value;
-
-        $capturedUrl = $this->resolvedUrl ?? $this->request?->fullUrl();
+        $capturedMethod = HttpMethod::tryFromMixed($this->request?->getMethod())?->value;
+        $capturedUrl = $this->request?->fullUrl();
 
         return new RelayContext(
             $this->request,
@@ -169,8 +156,6 @@ class RelayBuilder
             $this->failureReason,
             $this->status,
             $this->validationErrors,
-            $this->routeResult?->id,
-            $this->routeResult?->identifier,
             $capturedMethod,
             $capturedUrl,
             $this->provider,
@@ -214,16 +199,6 @@ class RelayBuilder
         return $this->deliveryService->executeEvent($relay, $callback);
     }
 
-    public function dispatchAutoRoute(): self
-    {
-        return $this->handleAutoRoute('auto_route');
-    }
-
-    public function autoRouteImmediately(): self
-    {
-        return $this->handleAutoRoute('auto_route_immediate');
-    }
-
     public function http(): RelayHttpClient
     {
         $this->ensureInboundGuardValidated();
@@ -259,42 +234,6 @@ class RelayBuilder
         $relay = $this->ensureRelayCaptured();
 
         return $this->deliveryService->dispatchChain($relay, $jobs);
-    }
-
-    private function handleAutoRoute(string $mode): self
-    {
-        $this->ensureInboundGuardValidated();
-        $this->resolvedMethod = null;
-        $this->resolvedUrl = null;
-
-        try {
-            $routeResult = $this->router->resolve($this->buildRouteContext());
-            $this->applyRouteResult($routeResult);
-            $this->mode ??= $mode;
-            $this->status = RelayStatus::QUEUED;
-        } catch (RoutingException $exception) {
-            $this->mode ??= $mode;
-            $this->failWith($exception->failure);
-            $this->validationError('route', $exception->getMessage());
-        }
-
-        $this->ensureRelayCaptured();
-
-        return $this;
-    }
-
-    private function applyRouteResult(RouteResult $route): void
-    {
-        $this->routeResult = $route;
-        $this->resolvedMethod = $route->method;
-        $this->resolvedUrl = $route->url;
-
-        $this->mergeHeaders($route->headers, false);
-    }
-
-    private function buildRouteContext(): RoutingContext
-    {
-        return RoutingContext::fromRequest($this->request, $this->payload);
     }
 
     private function ensureRelayCaptured(): Relay

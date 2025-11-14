@@ -11,7 +11,6 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `Atlas\Relay\Providers\AtlasRelayServiceProvider` | Auto-discovered package provider | Registers config, migrations, commands, and singletons. |
 | `Atlas\Relay\Facades\Relay` facade | `atlas-relay.manager` binding | Fluent API entrypoint; import via `use Atlas\Relay\Facades\Relay;`. |
 | `Atlas\Relay\Contracts\RelayManagerInterface` / `app('atlas-relay.manager')` | `Atlas\Relay\RelayManager` | Provides `request()`, `payload()`, `http()`, `cancel()`, `replay()` entrypoints. |
-| `Atlas\Relay\Routing\Router` / `app('atlas-relay.router')` | Router singleton | Supports database routes and custom providers. |
 | `Atlas\Relay\Services\RelayCaptureService` | Capture service singleton | Persistent relay storage according to Payload Capture PRD. |
 | `Atlas\Relay\Services\RelayLifecycleService` | Lifecycle service singleton | Cancelling/replaying/marking relays; used by delivery helpers. |
 | `Atlas\Relay\Services\RelayDeliveryService` | Delivery orchestrator singleton | HTTP/event/job execution wrappers. |
@@ -25,7 +24,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 
 | Method | Description |
 | --- | --- |
-| `Relay::request(Request $request): RelayBuilder` | Seed a builder from an inbound HTTP request; headers, method, and payload are copied automatically for routing heuristics and delivery callbacks. |
+| `Relay::request(Request $request): RelayBuilder` | Seed a builder from an inbound HTTP request; headers, method, and payload are copied automatically for delivery callbacks. |
 | `Relay::payload(mixed $payload): RelayBuilder` | Seed a builder when no HTTP request exists (internal/system triggers). Prefer `request()`/`http()` for typical flows. |
 | `Relay::provider(?string $provider): RelayBuilder` | Start a builder, tag it with the provider identifier, and continue configuring (works great before calling `http()`). |
 | `Relay::setReferenceId(?string $referenceId): RelayBuilder` | Same as above but for consumer-defined reference IDs, enabling tagging before issuing `http()` calls. |
@@ -48,8 +47,6 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | `setReferenceId(?string $referenceId)` | Store a consumer-defined identifier (order ID, case ID, etc.) alongside the relay record. |
 | `guard(?string $guard)` | Override provider mappings and force a named inbound guard profile to run before capture/delivery. |
 
-> **AutoRoute lifecycle config:** Retries, delays, and timeouts are now configured exclusively on `RelayRoute` definitions. Relays capture the `route_id`, and automation reads the latest route settings when enforcement is required.
-
 > **RelayStatus enum:** Status-related methods accept values from `Enums\RelayStatus`, which is stored as an unsigned tinyint on relay records.
 
 ### Persistence & Inspection
@@ -67,8 +64,6 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | Method | Description |
 | --- | --- |
 | `event(callable $callback): mixed` | Captures the relay and executes the callback synchronously; the callback receives `(payload, Relay)` when it accepts parameters. |
-| `dispatchAutoRoute(): self` | Uses the Router to resolve an outbound destination, persists the relay, and queues delivery. |
-| `autoRouteImmediately(): self` | Same as above but returns immediately after synchronous HTTP execution. |
 | `http(): RelayHttpClient` | Returns a HTTP proxy constrained by PRD HTTPS/redirect rules; call verbs like `->post($url, $payload)`. |
 | `dispatch(mixed $job): PendingDispatch` | Dispatches any Laravel job while injecting relay middleware for lifecycle tracking. |
 | `dispatchChain(array $jobs): PendingChain` | Builds a chain/chain-of-chains while ensuring each job carries relay middleware. |
@@ -121,24 +116,11 @@ HTTP deliveries merge headers in this order: inbound request snapshot (when usin
 
 ---
 
-## Routing API
-
-| Element | Public Surface | Usage |
-| --- | --- | --- |
-| `Router` | `registerProvider(string $name, RoutingProviderInterface $provider)`, `flushCache()`, `resolve(RouteContext $context): RouteResult` | Register programmatic providers (e.g. in a service provider) or rely on database routes. `resolve()` throws `RoutingException` when no route or resolver errors occur. |
-| `RoutingProviderInterface` | `determine(RouteContext $context): ?RouteResult`, `cacheKey(RouteContext $context): ?string`, `cacheTtlSeconds(): ?int` | Implement to provide dynamic routing; returning `null` from `cacheKey()` disables caching while non-null keys cache the result (optionally overriding TTL via `cacheTtlSeconds()`). |
-| `RouteContext` | `fromRequest(?Request $request, mixed $payload = null)`, `normalizedMethod()`, `normalizedPath()` | Build contexts from inbound request + payload for manual routing or provider testing. |
-| `RouteResult` | `fromModel(RelayRoute $route, array $parameters = [])`, `fromArray(array $data)`, `toArray()` | Value object describing resolved routes, including headers/lifecycle defaults/parameters. |
-| `RoutingException` | `noRoute()`, `disabledRoute()`, `resolverError()` | Exception type the router throws; inspect `$exception->failure` for `RelayFailure` codes. |
-
----
-
 ## Models
 
 | Model | Purpose | Helpers |
 | --- | --- | --- |
 | `Atlas\Relay\Models\Relay` | Live relay records capturing lifecycle + payload state. | `scopeDueForRetry()` (ready retries). Table name configurable via `atlas-relay.tables.relays`. |
-| `Atlas\Relay\Models\RelayRoute` | Persisted routing definitions used by AutoRoute modes. | `scopeEnabled()`. Table configurable via `atlas-relay.tables.relay_routes`. |
 | `Atlas\Relay\Models\RelayArchive` | Long-term storage for completed/failed relays. | `scopeEligibleForPurge(int $retentionDays)`. Table configurable via `atlas-relay.tables.relay_archives`. |
 
 All models inherit from `AtlasModel`, which reads the target table names from config at construction time.
@@ -158,7 +140,6 @@ All models inherit from `AtlasModel`, which reads the target table names from co
 | `atlas-relay:purge-archives` | Deletes archived relays older than `atlas-relay.archiving.purge_after_days`. |
 | `atlas-relay:relay:restore {id}` | Restores an archived relay into the live table. |
 | `atlas-relay:relay:inspect {id}` | Prints the JSON state for a live or archived relay. |
-| `atlas-relay:routes:seed path.json` | Bulk seeds relay routes from a JSON definition file. |
 
 Register the recurring commands inside `routes/console.php` using Laravel’s scheduling helpers:
 
@@ -180,14 +161,13 @@ Adjust the cadence as needed for your environment or run the commands manually.
 
 | Key | Description / Env Override |
 | --- | --- |
-| `tables.relays`, `tables.relay_routes`, `tables.relay_archives` | Customize table names. |
+| `tables.relays`, `tables.relay_archives` | Customize table names. |
 | `payload.max_bytes` | Unified max byte size for captured payloads, stored responses, and exception summaries (default 64KB). |
 | `capture.sensitive_headers` | Header block list automatically masked to `*********`. |
-| `routing.cache_ttl_seconds`, `routing.cache_store` | Router cache behaviour. |
 | `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
 | `inbound.provider_guards`, `inbound.guards` | Define inbound guard mappings + profiles (`capture_forbidden`, `required_headers`, optional validator class) that enforce authentication before webhook processing. |
 | `archiving.archive_after_days`, `archiving.purge_after_days` | Retention windows for archival and purge jobs. Use `atlas-relay:archive --chunk=` to adjust batch size (default `500`). |
-| `automation.stuck_threshold_minutes`, `automation.timeout_buffer_seconds` | Controls when "requeue stuck" and "enforce timeouts" consider a relay overdue. |
+| `automation.stuck_threshold_minutes`, `automation.timeout_buffer_seconds`, `automation.processing_timeout_seconds` | Controls when automation jobs consider a relay overdue. |
 
 ---
 

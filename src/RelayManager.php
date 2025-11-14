@@ -6,7 +6,6 @@ namespace Atlas\Relay;
 
 use Atlas\Relay\Contracts\RelayManagerInterface;
 use Atlas\Relay\Models\Relay;
-use Atlas\Relay\Routing\Router;
 use Atlas\Relay\Services\InboundGuardService;
 use Atlas\Relay\Services\RelayCaptureService;
 use Atlas\Relay\Services\RelayDeliveryService;
@@ -23,7 +22,6 @@ class RelayManager implements RelayManagerInterface
         private readonly RelayCaptureService $captureService,
         private readonly RelayLifecycleService $lifecycleService,
         private readonly RelayDeliveryService $deliveryService,
-        private readonly Router $router,
         private readonly InboundGuardService $guardService
     ) {}
 
@@ -71,7 +69,6 @@ class RelayManager implements RelayManagerInterface
     {
         return new RelayBuilder(
             $this->captureService,
-            $this->router,
             $this->deliveryService,
             $this->lifecycleService,
             $this->guardService,

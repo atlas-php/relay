@@ -20,8 +20,6 @@ class MigrationRegistrationTest extends TestCase
         $this->runPendingCommand('migrate', ['--database' => 'testbench'])->run();
 
         $relaysTable = config('atlas-relay.tables.relays');
-        $routesTable = config('atlas-relay.tables.relay_routes');
-
         $expectedLifecycleColumns = [
             'source_ip',
             'provider',
@@ -30,7 +28,6 @@ class MigrationRegistrationTest extends TestCase
             'payload',
             'status',
             'mode',
-            'route_id',
             'method',
             'url',
             'failure_reason',
@@ -43,20 +40,6 @@ class MigrationRegistrationTest extends TestCase
         ];
 
         $this->assertTrue(Schema::hasColumns($relaysTable, $expectedLifecycleColumns));
-
-        $this->assertTrue(Schema::hasColumns($routesTable, [
-            'method',
-            'path',
-            'type',
-            'url',
-            'is_retry',
-            'retry_seconds',
-            'retry_max_attempts',
-            'is_delay',
-            'delay_seconds',
-            'timeout_seconds',
-            'http_timeout_seconds',
-        ]));
 
         $this->assertTrue(Schema::hasColumns(
             config('atlas-relay.tables.relay_archives'),
@@ -72,14 +55,12 @@ class MigrationRegistrationTest extends TestCase
     {
         config()->set('atlas-relay.tables', [
             'relays' => 'custom_relays',
-            'relay_routes' => 'custom_relay_routes',
             'relay_archives' => 'custom_relay_archives',
         ]);
 
         $this->runPendingCommand('migrate:fresh', ['--database' => 'testbench'])->run();
 
         $this->assertTrue(Schema::hasTable('custom_relays'));
-        $this->assertTrue(Schema::hasTable('custom_relay_routes'));
         $this->assertTrue(Schema::hasTable('custom_relay_archives'));
 
         $this->assertFalse(Schema::hasTable('atlas_relays'));
@@ -101,7 +82,6 @@ class MigrationRegistrationTest extends TestCase
         $tenantSchema = Schema::connection('relay_tenant');
 
         $this->assertTrue($tenantSchema->hasTable('atlas_relays'));
-        $this->assertTrue($tenantSchema->hasTable('atlas_relay_routes'));
         $this->assertTrue($tenantSchema->hasTable('atlas_relay_archives'));
 
         $this->assertFalse(Schema::hasTable('atlas_relays'));

@@ -25,7 +25,6 @@ class RelayArchive extends AtlasModel
         'attempts' => 'integer',
         'response_http_status' => 'integer',
         'failure_reason' => 'integer',
-        'route_id' => 'integer',
         'next_retry_at' => 'immutable_datetime',
         'processing_at' => 'immutable_datetime',
         'completed_at' => 'immutable_datetime',

@@ -1,6 +1,6 @@
 {
     "name": "atlas-php/relay",
-    "description": "Unified Laravel relay lifecycle for capturing, routing, and delivering payloads.",
+    "description": "Unified Laravel relay lifecycle for capturing and delivering payloads.",
     "type": "library",
     "license": "MIT",
     "require": {

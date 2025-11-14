@@ -7,10 +7,9 @@ namespace Atlas\Relay\Models;
 use Atlas\Relay\Enums\HttpMethod;
 use Atlas\Relay\Enums\RelayStatus;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Represents the authoritative live relay record specified in the Payload Capture, Routing, and Outbound Delivery PRDs.
+ * Represents the authoritative live relay record specified in the Payload Capture and Outbound Delivery PRDs.
  *
  * @property positive-int $id
  * @property string|null $source_ip
@@ -20,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<mixed>|null $payload
  * @property RelayStatus $status
  * @property string|null $mode
- * @property int|null $route_id
  * @property HttpMethod|null $method
  * @property string|null $url
  * @property int|null $response_http_status
@@ -32,7 +30,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Carbon\CarbonImmutable|null $completed_at
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property RelayRoute|null $route
  */
 class Relay extends AtlasModel
 {
@@ -48,7 +45,6 @@ class Relay extends AtlasModel
         'attempts' => 'integer',
         'response_http_status' => 'integer',
         'failure_reason' => 'integer',
-        'route_id' => 'integer',
         'next_retry_at' => 'immutable_datetime',
         'processing_at' => 'immutable_datetime',
         'completed_at' => 'immutable_datetime',
@@ -65,17 +61,6 @@ class Relay extends AtlasModel
         return $query
             ->whereNotNull('next_retry_at')
             ->where('next_retry_at', '<=', now());
-    }
-
-    /**
-     * @phpstan-return BelongsTo<RelayRoute, Relay>
-     */
-    public function route(): BelongsTo
-    {
-        /** @var BelongsTo<RelayRoute, Relay> $relation */
-        $relation = $this->belongsTo(RelayRoute::class, 'route_id');
-
-        return $relation;
     }
 
     protected function tableNameConfigKey(): string

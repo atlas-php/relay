@@ -24,8 +24,6 @@ class RelayContext
         public readonly ?RelayFailure $failureReason = null,
         public readonly RelayStatus $status = RelayStatus::QUEUED,
         public readonly array $validationErrors = [],
-        public readonly ?int $routeId = null,
-        public readonly ?string $routeIdentifier = null,
         public readonly ?string $method = null,
         public readonly ?string $url = null,
         public readonly ?string $provider = null,

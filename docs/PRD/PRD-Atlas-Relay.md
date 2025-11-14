@@ -2,21 +2,21 @@
 # PRD — Atlas Relay
 
 ## Overview
-Atlas Relay provides a unified, reliable system to capture, process, route, and deliver payloads. Every relay is fully tracked end‑to‑end with complete visibility and auditability.
+Atlas Relay provides a unified, reliable system to capture inbound webhooks, drive downstream work, and record every lifecycle transition. Every relay is fully tracked end‑to‑end with complete visibility and auditability.
 
 ---
 
 ## Goals
-- Single fluent API for full relay lifecycle.
-- Guaranteed storage and traceability of all payloads.
-- Support event, dispatch, AutoRoute, and direct HTTP.
+- Single fluent API for the full webhook lifecycle.
+- Guaranteed storage and traceability of all payloads before any business logic runs.
+- Support event, dispatch, and direct HTTP delivery modes without additional routing layers.
 - Unified synchronous/asynchronous behavior.
 - Complete lifecycle observability.
 
 ---
 
 ## Relay Flow
-Request → Capture → Event/Dispatch/AutoRoute → Delivery → Complete → Archive
+Request → Capture → Event/Dispatch/HTTP → Complete → Archive
 
 ---
 
@@ -32,16 +32,6 @@ Relay::request($req)->event(fn($payload) => ...);
 Relay::request($req)->dispatch(new ExampleJob($payload));
 ```
 
-### Auto‑Route (Dispatch)
-```php
-Relay::request($req)->dispatchAutoRoute();
-```
-
-### Auto‑Route (Immediate)
-```php
-Relay::request($req)->autoRouteImmediately();
-```
-
 ### Direct HTTP
 ```php
 Relay::http()->post('https://example.com', ['payload' => true]);
@@ -50,11 +40,9 @@ Relay::http()->post('https://example.com', ['payload' => true]);
 ---
 
 ## Functional Summary
-- **Relay::request()** captures inbound HTTP, normalizes headers, stores payload, and exposes that payload directly on the builder for immediate routing/delivery usage.
+- **Relay::request()** captures inbound HTTP, normalizes headers, stores payload, and exposes that payload directly on the builder for downstream delivery or job execution.
 - **payload()** sets stored payload (optional when using `Relay::http()` because payload is captured from the request data).
 - **event()** runs internal logic synchronously.
-- **dispatchAutoRoute()** uses domain/route mapping.
-- **autoRouteImmediately()** delivers synchronously and returns response.
 - **http()** sends direct outbound HTTP (Laravel `Http` wrapper).
 - **dispatch()** uses Laravel’s native dispatch with lifecycle tracking.
 
@@ -62,7 +50,7 @@ Relay::http()->post('https://example.com', ['payload' => true]);
 
 ## Relay Tracking Model
 Every relay is represented by a unified record containing the entire transaction.  
-Full schema lives in **Payload Capture PRD** (`atlas_relays` includes all request, response, and lifecycle fields). Retry/delay/timeout configuration is defined on `atlas_relay_routes` and referenced via `route_id`.
+Full schema lives in **Payload Capture PRD** (`atlas_relays` includes all request, response, and lifecycle fields). Retry/delay/timeout enforcement is handled directly from the relay record combined with global automation config.
 
 ---
 
@@ -80,37 +68,28 @@ Rules:
 - All relay types use the same lifecycle.
 - Exceptions or failed outbound responses set status to `Failed` and populate `failure_reason`.
 - `event()` → completes when handler succeeds.
-- AutoRoute variants complete/fail based on HTTP outcome.
-- Direct HTTP completes/fails based on response.
+- Direct HTTP completes/fails based on response and lifecycle service results.
 
 ---
 
 ## Retry, Delay & Timeout Logic
-Applies **only to AutoRoute** deliveries.
+Automation relies entirely on the relay record plus package configuration.
 
 Source of configuration:
-- `atlas_relay_routes` stores retry/delay/timeout knobs.
-- Relay records point to the route via `route_id`; automation reads the latest route definition whenever it needs thresholds.
-- Manual relays (no `route_id`) do not participate in these automation features.
+- `next_retry_at` determines when `atlas-relay:retry-overdue` will requeue a relay.
+- Applications decide if/when to populate `next_retry_at` (e.g., after delivery failures).
+- `atlas-relay.automation.processing_timeout_seconds` + `timeout_buffer_seconds` control when `atlas-relay:enforce-timeouts` marks a relay as failed while it sits in `processing`.
 
 Rules:
-- Retries: governed by the route’s `is_retry`, `retry_seconds`, `retry_max_attempts`.
-- Delays: `is_delay`, `delay_seconds`.
-- Timeouts: `timeout_seconds`, `http_timeout_seconds`.
-- Updating a route immediately affects future enforcement runs because configuration is no longer copied onto the relay.
-
----
-
-## Routing Behavior
-- AutoRoute uses domain + route registry.
-- Supports strict and dynamic paths (e.g., `/event/{ID}`).
-- Route lookups cached for 20 minutes; cache invalidated when config changes.
+- Retries: when `next_retry_at` is in the past, `retry-overdue` resets status to `queued`, clears `next_retry_at`, and lifecycle services increment attempts on the next `startAttempt`.
+- Delays: simply set `next_retry_at` in the future; the retry job will pick it up when due.
+- Timeouts: once `processing_at` is older than the configured processing timeout (plus buffer), the timeout job marks the relay failed with `RelayFailure::ROUTE_TIMEOUT`.
 
 ---
 
 ## Observability
 All lifecycle data is stored inline on `atlas_relays`:  
-status, failure_reason, attempts, durations, `response_http_status`, `response_payload`, and scheduling timestamps. Retry/delay/timeout configuration is resolved dynamically from the associated route.
+status, failure_reason, attempts, durations, `response_http_status`, `response_payload`, and scheduling timestamps. Automation relies on those columns plus the automation config section for enforcement thresholds.
 
 ---
 
@@ -140,7 +119,6 @@ Purging: 11 PM EST
 
 ## Notes
 - HTTP & Dispatch use Laravel‑native APIs; Atlas Relay only intercepts for lifecycle recording.
-- Route-level config is the single source of truth for retries/delays/timeouts.
 - All payloads stored regardless of delivery result.
 - Malformed JSON stored as‑is with `INVALID_PAYLOAD`.
 - All operations must be idempotent.

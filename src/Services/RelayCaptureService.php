@@ -96,7 +96,6 @@ class RelayCaptureService
             'failure_reason' => $failureReason?->value,
             'response_payload' => null,
             'attempts' => 0,
-            'route_id' => $context->routeId,
             'method' => $method?->value,
             'url' => $url,
             'next_retry_at' => null,
@@ -223,7 +222,6 @@ class RelayCaptureService
     private function reportValidationErrors(array $validationErrors, array $attributes): void
     {
         Log::warning('atlas-relay:validation', [
-            'route_id' => $attributes['route_id'] ?? null,
             'mode' => $attributes['mode'] ?? null,
             'provider' => $attributes['provider'] ?? null,
             'reference_id' => $attributes['reference_id'] ?? null,
@@ -235,7 +233,6 @@ class RelayCaptureService
     {
         Log::warning('atlas-relay:method-invalid', [
             'provided' => $method,
-            'route_id' => $context->routeId,
             'allowed' => HttpMethod::values(),
         ]);
     }

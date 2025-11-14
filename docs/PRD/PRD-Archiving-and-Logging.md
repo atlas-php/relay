@@ -24,7 +24,7 @@ Relay Created → Inline Updates → Completed/Failed → Archived → Purged
 
 ### Source of Truth
 - `atlas_relays` contains all lifecycle metadata: status, failure_reason, response_http_status/payload, timing fields, attempts, `next_retry_at`, etc.
-- Retry/delay/timeout configuration now lives solely on `atlas_relay_routes`; relays link back via `route_id` when those automation features are enabled.
+- Retry/delay/timeout enforcement relies on inline relay fields (`next_retry_at`, `processing_at`, etc.) plus the automation config settings.
 - No separate log tables.
 - Archived records are exact copies.
 
@@ -78,7 +78,7 @@ Inline fields provide all required metrics:
 - Attempt counts and scheduling timestamps
 - `next_retry_at`, `processing_at`, `completed_at`, and other lifecycle timestamps/duration fields
 - `completed_at` records the end of any lifecycle (success, failure, or cancellation) and is the canonical timestamp for retention policies.
-- Automation commands resolve `route_id` back to `atlas_relay_routes` whenever retry/delay/timeout thresholds are needed.
+- Automation commands read those inline fields (and config) when deciding whether to retry, requeue, or mark timeouts.
 
 Derived metrics for operational reporting:
 - `relay_archived_count`

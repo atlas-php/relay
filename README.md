@@ -1,6 +1,6 @@
 # Atlas Relay
 
-**Atlas Relay** is a Laravel package that provides a **complete relay system** for managing **inbound and outbound webhooks**, events, and payloads.
+**Atlas Relay** is a Laravel package that provides a **complete relay system** for capturing inbound webhooks and driving downstream work (events, jobs, or outbound HTTP calls) with consistent lifecycle tracking.
 
 ## 💡 Overview
 
@@ -17,11 +17,10 @@ Atlas Relay ensures:
 
 ## ⚡ Core Concepts
 
-`Request → Payload Capture → Routing → Outbound Delivery → Complete → Archive`
+`Request → Payload Capture → Delivery → Complete → Archive`
 
 Each stage of the lifecycle is defined in its own PRD:
 - [Payload Capture](./docs/PRD/PRD-Payload-Capture.md): receiving and validating data
-- [Routing](./docs/PRD/PRD-Routing.md): determining the correct destination (if using auto-route)
 - [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md): transmitting payloads and handling retries
 - [Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md): long-term retention and audit trails
 
@@ -88,30 +87,12 @@ Atlas will record the response status and payload of your request (See [Outbound
 
 ---
 
-### Auto-Route Dispatch (Inbound → Outbound)
-
-```php
-Relay::request($request)->dispatchAutoRoute();
-```
-Receives a webhook and automatically delivers it to the correct outbound destination using your configured routes and captured payload. (Relates to [Routing](./docs/PRD/PRD-Routing.md))
-
-### Auto-Route Immediate Delivery
-
-```php
-$response = Relay::request($request)->autoRouteImmediately();
-```
-Performs immediate inbound-to-outbound delivery, returning the response inline with the captured payload.  
-(Relates to [Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md))
-
----
-
 ## 📚 Deep Dives
 
 - [Install Guide](./docs/Install.md)
 - [Full API Reference](./docs/Full-API.md)
 - [PRD — Atlas Relay](./docs/PRD/PRD-Atlas-Relay.md)
 - [PRD — Payload Capture](./docs/PRD/PRD-Payload-Capture.md)
-- [PRD — Auto Routing](./docs/PRD/PRD-Routing.md)
 - [PRD — Outbound Delivery](./docs/PRD/PRD-Outbound-Delivery.md)
 - [PRD — Archiving & Logging](./docs/PRD/PRD-Archiving-and-Logging.md)
 - [PRD — Example Usage](./docs/PRD/PRD-Example-Usage.md)

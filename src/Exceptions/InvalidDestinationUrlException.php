@@ -7,9 +7,9 @@ namespace Atlas\Relay\Exceptions;
 use InvalidArgumentException;
 
 /**
- * Exception thrown when a route result specifies a URL that exceeds storage constraints.
+ * Exception thrown when a destination URL exceeds storage constraints.
  *
- * Defined by PRD: Routing — Route Definitions (url requirements).
+ * Defined by PRD: Payload Capture — Destination URL requirements.
  */
 class InvalidDestinationUrlException extends InvalidArgumentException
 {
