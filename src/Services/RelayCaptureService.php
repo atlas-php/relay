@@ -59,7 +59,7 @@ class RelayCaptureService
             }
         }
 
-        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload_max_bytes', 64 * 1024);
         $payloadBytes = $this->payloadSize($payload);
 
         if ($payloadBytes > $maxBytes) {
@@ -141,7 +141,7 @@ class RelayCaptureService
             return [];
         }
 
-        $sensitive = $this->prepareHeaderLookup(config('atlas-relay.capture.sensitive_headers', []));
+        $sensitive = $this->prepareHeaderLookup(config('atlas-relay.sensitive_headers', []));
 
         $normalized = [];
 

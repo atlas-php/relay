@@ -83,7 +83,7 @@ class EventDeliveryTest extends TestCase
             $this->assertStringContainsString('RuntimeException', $relay->response_payload);
             $this->assertStringContainsString('boom', $relay->response_payload);
             $this->assertLessThanOrEqual(
-                (int) config('atlas-relay.payload.max_bytes'),
+                (int) config('atlas-relay.payload_max_bytes'),
                 strlen($relay->response_payload)
             );
         }
@@ -93,8 +93,8 @@ class EventDeliveryTest extends TestCase
     {
         $builder = Relay::payload(['foo' => 'bar']);
 
-        $original = config('atlas-relay.payload.max_bytes');
-        config()->set('atlas-relay.payload.max_bytes', 32);
+        $original = config('atlas-relay.payload_max_bytes');
+        config()->set('atlas-relay.payload_max_bytes', 32);
 
         try {
             $builder->event(function (): void {
@@ -107,7 +107,7 @@ class EventDeliveryTest extends TestCase
             $this->assertLessThanOrEqual(32, strlen($relay->response_payload));
             $this->assertStringEndsWith('...', $relay->response_payload);
         } finally {
-            config()->set('atlas-relay.payload.max_bytes', $original);
+            config()->set('atlas-relay.payload_max_bytes', $original);
         }
     }
 

@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Validates automation console commands for timeouts, archiving, and purging relays.
+ * Validates the archiving console commands shipped with Atlas Relay.
  */
 class AutomationCommandsTest extends TestCase
 {
@@ -30,25 +30,6 @@ class AutomationCommandsTest extends TestCase
         Carbon::setTestNow();
 
         parent::tearDown();
-    }
-
-    public function test_enforce_timeouts_marks_relays_failed(): void
-    {
-        $relay = Relay::query()->create([
-            'source_ip' => '127.0.0.1',
-            'headers' => [],
-            'payload' => [],
-            'status' => RelayStatus::PROCESSING,
-            'type' => RelayType::INBOUND,
-            'processing_at' => Carbon::now()->subMinutes(5),
-        ]);
-
-        config()->set('atlas-relay.automation.processing_timeout_seconds', 60);
-
-        $this->runPendingCommand('atlas-relay:enforce-timeouts')->assertExitCode(0);
-
-        $relay->refresh();
-        $this->assertSame(RelayStatus::FAILED, $relay->status);
     }
 
     public function test_archive_and_purge_commands(): void

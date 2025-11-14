@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atlas\Relay\Providers;
 
 use Atlas\Relay\Console\Commands\ArchiveRelaysCommand;
-use Atlas\Relay\Console\Commands\EnforceRelayTimeoutsCommand;
 use Atlas\Relay\Console\Commands\InspectRelayCommand;
 use Atlas\Relay\Console\Commands\PurgeRelayArchivesCommand;
 use Atlas\Relay\Console\Commands\RestoreRelayCommand;
@@ -50,7 +49,6 @@ class AtlasRelayServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                EnforceRelayTimeoutsCommand::class,
                 ArchiveRelaysCommand::class,
                 PurgeRelayArchivesCommand::class,
                 RestoreRelayCommand::class,

@@ -42,9 +42,9 @@ class RelayCaptureTest extends TestCase
 
     public function test_custom_sensitive_headers_are_masked(): void
     {
-        $originalSensitive = config('atlas-relay.capture.sensitive_headers');
+        $originalSensitive = config('atlas-relay.sensitive_headers');
 
-        config()->set('atlas-relay.capture.sensitive_headers', ['x-secret-token']);
+        config()->set('atlas-relay.sensitive_headers', ['x-secret-token']);
 
         $request = Request::create('/relay', 'POST');
         $request->headers->set('X-Secret-Token', '12345');
@@ -54,7 +54,7 @@ class RelayCaptureTest extends TestCase
         $headers = $relay->headers ?? [];
         $this->assertSame('*********', $headers['x-secret-token'] ?? null);
 
-        config()->set('atlas-relay.capture.sensitive_headers', $originalSensitive);
+        config()->set('atlas-relay.sensitive_headers', $originalSensitive);
     }
 
     public function test_request_capture_persists_http_metadata(): void
@@ -94,8 +94,8 @@ class RelayCaptureTest extends TestCase
 
     public function test_request_payload_limit_marks_relay_failed(): void
     {
-        $originalMax = config('atlas-relay.payload.max_bytes');
-        config()->set('atlas-relay.payload.max_bytes', 32);
+        $originalMax = config('atlas-relay.payload_max_bytes');
+        config()->set('atlas-relay.payload_max_bytes', 32);
 
         try {
             $payload = ['data' => str_repeat('A', 128)];
@@ -117,7 +117,7 @@ class RelayCaptureTest extends TestCase
             $this->assertSame(RelayFailure::PAYLOAD_TOO_LARGE->value, $relay->failure_reason);
             $this->assertNull($relay->payload);
         } finally {
-            config()->set('atlas-relay.payload.max_bytes', $originalMax);
+            config()->set('atlas-relay.payload_max_bytes', $originalMax);
         }
     }
 

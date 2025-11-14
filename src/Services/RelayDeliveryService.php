@@ -65,12 +65,7 @@ class RelayDeliveryService
      */
     public function http(Closure $relayResolver, array $headers = [], ?Closure $headerRecorder = null): RelayHttpClient
     {
-        $pending = Http::withOptions([
-            'allow_redirects' => [
-                'max' => config('atlas-relay.http.max_redirects', 3),
-                'track_redirects' => true,
-            ],
-        ]);
+        $pending = Http::withOptions([]);
 
         if ($headers !== []) {
             $pending = $pending->withHeaders($headers);

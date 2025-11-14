@@ -48,8 +48,6 @@ Receive Webhook Relay is the first stage of Atlas Relay. It guarantees that ever
 | 105  | INVALID_PAYLOAD       | JSON decode failure.                                      |
 | 108  | FORBIDDEN_GUARD       | Provider guard rejected the request before processing.    |
 | 201  | HTTP_ERROR            | Non‑2xx response.                                         |
-| 203  | TOO_MANY_REDIRECTS    | Redirect limit exceeded.                                  |
-| 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch.                                   |
 | 205  | CONNECTION_ERROR      | Network/SSL/DNS failure.                                  |
 | 206  | CONNECTION_TIMEOUT    | HTTP timeout.                                             |
 
@@ -142,7 +140,7 @@ class StripeWebhookValidator implements InboundGuardValidatorInterface
 
 ## Capture Rules
 
-- Payloads are truncated when `atlas-relay.payload.max_bytes` is exceeded and the relay is marked `PAYLOAD_TOO_LARGE`.
-- Sensitive headers are masked according to `atlas-relay.capture.sensitive_headers`.
+- Payloads are truncated when `atlas-relay.payload_max_bytes` is exceeded and the relay is marked `PAYLOAD_TOO_LARGE`.
+- Sensitive headers are masked according to `atlas-relay.sensitive_headers`.
 - Destination URLs longer than 255 characters are rejected with `InvalidDestinationUrlException`.
 - When guards opt-in to `capture_forbidden`, relays are stored even when authentication fails, ensuring auditability.

@@ -24,7 +24,7 @@ Relay Created → Inline Updates → Completed/Failed → Archived → Purged
 
 ### Source of Truth
 - `atlas_relays` contains all lifecycle metadata: type, status, failure_reason, meta, response_http_status/payload, and timing fields (`processing_at`, `completed_at`, etc.).
-- Timeout enforcement relies on inline relay fields (`processing_at`, `completed_at`) plus the automation config settings.
+- Timeout enforcement (when implemented by consumers) should use inline relay fields (`processing_at`, `completed_at`) as the source of truth.
 - No separate log tables.
 - Archived records are exact copies.
 

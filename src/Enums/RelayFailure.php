@@ -19,8 +19,6 @@ enum RelayFailure: int
     case ROUTE_RESOLVER_ERROR = 107;
     case FORBIDDEN_GUARD = 108;
     case HTTP_ERROR = 201;
-    case TOO_MANY_REDIRECTS = 203;
-    case REDIRECT_HOST_CHANGED = 204;
     case CONNECTION_ERROR = 205;
     case CONNECTION_TIMEOUT = 206;
 
@@ -37,8 +35,6 @@ enum RelayFailure: int
             self::ROUTE_RESOLVER_ERROR => 'Route Resolver Error',
             self::FORBIDDEN_GUARD => 'Forbidden Guard',
             self::HTTP_ERROR => 'HTTP Error',
-            self::TOO_MANY_REDIRECTS => 'Too Many Redirects',
-            self::REDIRECT_HOST_CHANGED => 'Redirect Host Changed',
             self::CONNECTION_ERROR => 'Connection Error',
             self::CONNECTION_TIMEOUT => 'Connection Timeout',
         };
@@ -57,8 +53,6 @@ enum RelayFailure: int
             self::ROUTE_RESOLVER_ERROR => 'Programmatic routing provider threw an exception.',
             self::FORBIDDEN_GUARD => 'Inbound provider guard rejected the request before processing.',
             self::HTTP_ERROR => 'Outbound response returned a non-2xx HTTP status code.',
-            self::TOO_MANY_REDIRECTS => 'Redirect limit (3) exceeded during outbound request.',
-            self::REDIRECT_HOST_CHANGED => 'Redirect attempted to a different host and was blocked.',
             self::CONNECTION_ERROR => 'Outbound delivery failed because of network, SSL, or DNS errors.',
             self::CONNECTION_TIMEOUT => 'Outbound delivery timed out before receiving a response.',
         };

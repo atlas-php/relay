@@ -50,7 +50,7 @@ Relay::http()->post('https://example.com', ['payload' => true]);
 
 ## Relay Tracking Model
 Every relay is represented by a unified record containing the entire transaction.  
-Full schema lives in **Receive Webhook Relay PRD** (`atlas_relays` includes all request, response, and lifecycle fields, including `RelayType` to distinguish inbound/outbound/system relays). Automation exclusively enforces processing timeouts based on inline timestamps plus the automation config.
+Full schema lives in **Receive Webhook Relay PRD** (`atlas_relays` includes all request, response, and lifecycle fields, including `RelayType` to distinguish inbound/outbound/system relays). Inline timestamps are exposed so consumers can implement any automation (timeouts, retries, escalations) that fits their workload; the package no longer attempts to enforce those behaviors automatically.
 
 ---
 
@@ -72,20 +72,14 @@ Rules:
 
 ---
 
-## Timeout Logic
-Automation relies on inline timestamps plus package configuration.
-
-Source of configuration:
-- `atlas-relay.automation.processing_timeout_seconds` + `timeout_buffer_seconds` control when `atlas-relay:enforce-timeouts` marks a relay as failed while it sits in `processing`.
-
-Rules:
-- Timeouts: once `processing_at` is older than the configured processing timeout (plus buffer), the timeout job marks the relay failed with `RelayFailure::ROUTE_TIMEOUT`.
+## Timeout Guidance
+Consumers determine when a relay has stalled in `PROCESSING`. Use the stored `processing_at` timestamp, your own buffering heuristics, and `RelayLifecycleService::markFailed($relay, RelayFailure::ROUTE_TIMEOUT)` (or similar) to implement alerting or remediation in the host application. Atlas Relay exposes the necessary metadata but no longer provides an opinionated timeout job.
 
 ---
 
 ## Observability
 All lifecycle data is stored inline on `atlas_relays`:  
-status, failure_reason, type, durations, `response_http_status`, `response_payload`, and scheduling timestamps. Automation relies on those columns plus the automation config section for enforcement thresholds.
+status, failure_reason, type, durations, `response_http_status`, `response_payload`, and scheduling timestamps. Consumers can derive any automation signals they need (timeouts, retries, alerts) directly from those columns.
 
 ---
 
@@ -105,9 +99,8 @@ Purging: 11 PM EST
 ## Automation Jobs
 | Job                  | Frequency    | Purpose                      |
 |----------------------|--------------|------------------------------|
-    | Timeout enforcement  | Hourly       | Mark timed‑out relays failed |
-    | Archiving            | Daily        | Move old relays              |
-    | Purging              | Daily        | Delete old archives          |
+| Archiving            | Daily        | Move old relays              |
+| Purging              | Daily        | Delete old archives          |
 
 ---
 

@@ -9,7 +9,6 @@ Send Webhook Relay describes how Atlas Relay delivers captured payloads to downs
 ## Goals
 - Provide consistent outbound execution for HTTP calls, synchronous events, and queued jobs.
 - Record every response payload, failure reason, and timestamp for auditing.
-- Enforce transport safety (HTTPS, redirect limits, host pinning).
 - Surface delivery context to jobs via middleware and helpers without changing Laravel ergonomics.
 
 ---
@@ -34,7 +33,7 @@ Every path operates on a single relay record. Fan-out (multiple deliveries per r
 ## Laravel Wrapper Design
 Send Webhook Relay wraps Laravel’s native primitives:
 
-- **HTTP** — Uses `Http::` under the hood. The wrapper writes headers/method/url onto the relay, enforces HTTPS and redirect policies, and captures status/payload (truncated to the configured byte limit). Exceptions are mapped to `RelayFailure` codes.
+- **HTTP** — Uses `Http::` under the hood. The wrapper writes headers/method/url onto the relay and captures status/payload (truncated to the configured byte limit) while leaving HTTPS/redirect settings entirely up to the consuming application. Exceptions are mapped to `RelayFailure` codes.
 - **Dispatch** — Returns Laravel’s `PendingDispatch` and supports all queue customizations. Middleware (`RelayJobMiddleware`) marks `processing`, updates completion timestamps, and captures exceptions or helper-triggered failures.
 - **Event** — Executes the provided callback synchronously. Success marks the relay `COMPLETED`; exceptions mark it `FAILED` with `RelayFailure::EXCEPTION`.
 
@@ -43,11 +42,10 @@ Send Webhook Relay wraps Laravel’s native primitives:
 ## HTTP Execution Rules
 - Method defaults to the invoked verb (`get`, `post`, etc.); payload argument becomes the request body.
 - Headers provided via `withHeaders()` are merged into the relay record.
-- HTTPS is mandatory unless `atlas-relay.http.enforce_https` is disabled.
-- Redirects are limited to `atlas-relay.http.max_redirects`; host changes result in `RelayFailure::REDIRECT_HOST_CHANGED`.
+- Consumers control HTTPS enforcement, redirect policies, retries, and all other HTTP client options directly through Laravel’s `Http` facade before invoking verbs.
 - Responses record:
   - `response_http_status`
-  - `response_payload` (truncated to `atlas-relay.payload.max_bytes`)
+  - `response_payload` (truncated to `atlas-relay.payload_max_bytes`)
 
 ## Dispatch Execution Rules
 - Middleware calls `RelayLifecycleService::startAttempt()` to mark `PROCESSING`.
@@ -79,10 +77,8 @@ Send Webhook Relay wraps Laravel’s native primitives:
 | 101  | PAYLOAD_TOO_LARGE     | Payload >64KB                              |
 | 102  | NO_ROUTE_MATCH        | Legacy code (reserved).                    |
 | 103  | CANCELLED             | Manually cancelled                         |
-| 104  | ROUTE_TIMEOUT         | Processing timeout (automation enforcement)|
+| 104  | ROUTE_TIMEOUT         | Processing timeout (consumer automation)   |
 | 201  | HTTP_ERROR            | Non‑2xx response                           |
-| 203  | TOO_MANY_REDIRECTS    | >3 redirects                               |
-| 204  | REDIRECT_HOST_CHANGED | Redirect attempted to a different host     |
 | 205  | CONNECTION_ERROR      | Network/SSL/DNS failure                    |
 | 206  | CONNECTION_TIMEOUT    | HTTP timeout                               |
 
@@ -90,13 +86,7 @@ Send Webhook Relay wraps Laravel’s native primitives:
 
 ## Automation
 
-Only timeout enforcement remains active for outbound deliveries:
-
-| Job                 | Frequency | Description |
-|---------------------|-----------|-------------|
-| Timeout Enforcement | Hourly    | Uses `atlas-relay.automation.processing_timeout_seconds` (+ optional buffer) to mark relays stuck in `PROCESSING` as failed with `RelayFailure::ROUTE_TIMEOUT`. |
-
-Archiving and purging continue to run as described in the Archiving & Logging PRD.
+Atlas Relay no longer ships a timeout enforcement command. Consumers should implement their own schedulers (horizon metrics, queue monitors, etc.) if they need to fail relays stuck in `PROCESSING`—`RelayLifecycleService::markFailed(..., RelayFailure::ROUTE_TIMEOUT)` remains available for that workflow. Archiving and purging continue to run as described in the Archiving & Logging PRD.
 
 ---
 
@@ -110,5 +100,5 @@ Archiving and purging continue to run as described in the Archiving & Logging PR
 
 ## Notes
 - There is no automatic retry system; re-delivery must be initiated by the consuming application (e.g., by creating a new relay).
-- HTTPS enforcement and redirect guards are on by default to protect outbound calls.
+- HTTPS/redirect policies are entirely consumer-defined via Laravel’s HTTP client options; Atlas only records the outcome.
 - Custom jobs do not need to inherit special base classes—middleware handles lifecycle tracking transparently.

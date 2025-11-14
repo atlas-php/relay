@@ -17,28 +17,14 @@ return [
         'purge_after_days' => env('ATLAS_RELAY_PURGE_DAYS', 180),
     ],
 
-    'payload' => [
-        'max_bytes' => 64 * 1024,
-    ],
+    'payload_max_bytes' => 64 * 1024,
 
-    'capture' => [
-        'sensitive_headers' => [
-            'authorization',
-            'proxy-authorization',
-            'x-api-key',
-            'api-key',
-            'cookie',
-        ],
-    ],
-
-    'http' => [
-        'max_redirects' => env('ATLAS_RELAY_MAX_REDIRECTS', 3),
-        'enforce_https' => env('ATLAS_RELAY_ENFORCE_HTTPS', true),
-    ],
-
-    'automation' => [
-        'timeout_buffer_seconds' => env('ATLAS_RELAY_TIMEOUT_BUFFER_SECONDS', 0),
-        'processing_timeout_seconds' => env('ATLAS_RELAY_PROCESSING_TIMEOUT_SECONDS'),
+    'sensitive_headers' => [
+        'authorization',
+        'proxy-authorization',
+        'x-api-key',
+        'api-key',
+        'cookie',
     ],
 
     'inbound' => [

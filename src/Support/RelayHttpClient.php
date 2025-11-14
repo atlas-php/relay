@@ -10,7 +10,6 @@ use Atlas\Relay\Exceptions\RelayHttpException;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Services\RelayLifecycleService;
 use Closure;
-use GuzzleHttp\Exception\TooManyRedirectsException;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -19,9 +18,6 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use JsonSerializable;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\UriInterface;
 use RuntimeException;
 use Traversable;
 
@@ -105,7 +101,6 @@ class RelayHttpClient
                 );
             }
 
-            $this->assertHttps($url);
             $this->registerPayloadFromArguments($relay, $arguments);
             $this->registerDestination($relay, $url, $resolvedMethod);
         } catch (RelayHttpException $exception) {
@@ -119,7 +114,6 @@ class RelayHttpClient
 
         $relay = $this->lifecycle->startAttempt($relay);
         $startedAt = microtime(true);
-        $this->applyRedirectGuards($url, $relay, $startedAt);
 
         try {
             /** @var Response $response */
@@ -130,16 +124,6 @@ class RelayHttpClient
             $this->lifecycle->markFailed($relay, $failure, [], $duration);
 
             throw $exception;
-        } catch (TooManyRedirectsException $exception) {
-            $duration = $this->durationSince($startedAt);
-            $this->lifecycle->markFailed($relay, RelayFailure::TOO_MANY_REDIRECTS, [], $duration);
-
-            throw new RelayHttpException(
-                'Redirect limit exceeded for relay HTTP delivery.',
-                RelayFailure::TOO_MANY_REDIRECTS,
-                0,
-                $exception
-            );
         } catch (RequestException $exception) {
             $duration = $this->durationSince($startedAt);
             $this->lifecycle->markFailed($relay, RelayFailure::HTTP_ERROR, [], $duration);
@@ -148,8 +132,6 @@ class RelayHttpClient
         }
 
         $duration = $this->durationSince($startedAt);
-
-        $this->evaluateRedirects($url, $response, $relay, $duration);
 
         $payload = $this->normalizePayload($response);
 
@@ -162,54 +144,6 @@ class RelayHttpClient
         }
 
         return $response;
-    }
-
-    private function assertHttps(string $url): void
-    {
-        $enforce = (bool) config('atlas-relay.http.enforce_https', true);
-
-        if (! $enforce) {
-            return;
-        }
-
-        if (Str::startsWith(strtolower($url), 'https://')) {
-            return;
-        }
-
-        throw new RelayHttpException(
-            'Atlas Relay HTTP deliveries require HTTPS targets.',
-            RelayFailure::HTTP_ERROR
-        );
-    }
-
-    private function evaluateRedirects(string $originalUrl, Response $response, Relay $relay, int $duration): void
-    {
-        $stats = $response->handlerStats();
-        $redirectCount = (int) ($stats['redirect_count'] ?? 0);
-        $maxRedirects = (int) config('atlas-relay.http.max_redirects', 3);
-
-        if ($redirectCount > $maxRedirects) {
-            $this->lifecycle->markFailed($relay, RelayFailure::TOO_MANY_REDIRECTS, [], $duration);
-
-            throw new RelayHttpException(
-                'Redirect limit exceeded for relay HTTP delivery.',
-                RelayFailure::TOO_MANY_REDIRECTS
-            );
-        }
-
-        $effective = (string) ($response->effectiveUri() ?? $originalUrl);
-
-        $originalHost = parse_url($originalUrl, PHP_URL_HOST);
-        $effectiveHost = parse_url($effective, PHP_URL_HOST);
-
-        if (is_string($effectiveHost) && is_string($originalHost) && ! hash_equals($originalHost, $effectiveHost)) {
-            $this->lifecycle->markFailed($relay, RelayFailure::REDIRECT_HOST_CHANGED, [], $duration);
-
-            throw new RelayHttpException(
-                'Redirect attempted to a different host.',
-                RelayFailure::REDIRECT_HOST_CHANGED
-            );
-        }
     }
 
     private function durationSince(float $startedAt): int
@@ -273,7 +207,7 @@ class RelayHttpClient
             return null;
         }
 
-        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload_max_bytes', 64 * 1024);
 
         return strlen($payload) > $maxBytes
             ? substr($payload, 0, $maxBytes)
@@ -289,47 +223,6 @@ class RelayHttpClient
         }
 
         return $this->truncatePayload($response->body());
-    }
-
-    private function applyRedirectGuards(string $originalUrl, Relay $relay, float $startedAt): void
-    {
-        $originalHost = parse_url($originalUrl, PHP_URL_HOST);
-        $maxRedirects = (int) config('atlas-relay.http.max_redirects', 3);
-
-        $this->pendingRequest = $this->pendingRequest->withOptions([
-            'allow_redirects' => [
-                'max' => $maxRedirects,
-                'strict' => true,
-                'referer' => false,
-                'track_redirects' => true,
-                'on_redirect' => function (
-                    RequestInterface $request,
-                    ResponseInterface $response,
-                    UriInterface $uri
-                ) use ($relay, $startedAt, $originalHost) {
-                    $targetHost = $uri->getHost();
-
-                    if (! is_string($originalHost) || $originalHost === '' || $targetHost === '') {
-                        return;
-                    }
-
-                    if (! hash_equals($originalHost, $targetHost)) {
-                        $duration = $this->durationSince($startedAt);
-                        $this->lifecycle->markFailed(
-                            $relay,
-                            RelayFailure::REDIRECT_HOST_CHANGED,
-                            [],
-                            $duration
-                        );
-
-                        throw new RelayHttpException(
-                            'Redirect attempted to a different host.',
-                            RelayFailure::REDIRECT_HOST_CHANGED
-                        );
-                    }
-                },
-            ],
-        ]);
     }
 
     /**
@@ -353,7 +246,7 @@ class RelayHttpClient
             return;
         }
 
-        $maxBytes = (int) config('atlas-relay.payload.max_bytes', 64 * 1024);
+        $maxBytes = (int) config('atlas-relay.payload_max_bytes', 64 * 1024);
         $payloadBytes = $this->payloadSize($normalized);
 
         if ($payloadBytes > $maxBytes) {

@@ -65,7 +65,7 @@ This document enumerates every public surface Atlas Relay exposes to consuming L
 | Method | Description |
 | --- | --- |
 | `event(callable $callback): mixed` | Captures the relay and executes the callback synchronously; the callback receives `(payload, Relay)` when it accepts parameters. |
-| `http(): RelayHttpClient` | Returns a HTTP proxy constrained by PRD HTTPS/redirect rules; call verbs like `->post($url, $payload)`. |
+| `http(): RelayHttpClient` | Returns a HTTP proxy that records relay lifecycle data while leaving HTTP client options under consumer control (call verbs like `->post($url, $payload)`). |
 | `dispatch(mixed $job): PendingDispatch` | Dispatches any Laravel job while injecting relay middleware for lifecycle tracking. |
 | `dispatchChain(array $jobs): PendingChain` | Builds a chain/chain-of-chains while ensuring each job carries relay middleware. |
 
@@ -108,7 +108,7 @@ HTTP deliveries merge headers in this order: inbound request snapshot (when usin
 
 | Component | Key Methods | Notes |
 | --- | --- | --- |
-| `RelayHttpClient` | Dynamic HTTP verbs (`get`, `post`, etc.) plus pass-through to `PendingRequest` configurators (e.g. `withHeaders`, `timeout`) | Enforces HTTPS (unless disabled), redirect host pinning, payload truncation, and lifecycle updates. |
+| `RelayHttpClient` | Dynamic HTTP verbs (`get`, `post`, etc.) plus pass-through to `PendingRequest` configurators (e.g. `withHeaders`, `timeout`) | Captures headers/method/url, truncates payloads at the configured limit, and records responses/failures without overriding your HTTP options. |
 | `RelayJobMiddleware` | `handle(object $job, Closure $next)` | Add to custom jobs to automatically start/stop lifecycle attempts. |
 | `RelayJobContext` | `set()`, `current()`, `clear()` | Scoped helper resolved via the container to expose the active relay to downstream code. |
 | `RelayJobHelper` | `relay()`, `fail(RelayFailure $failure, string $message = '', array $attributes = [])` | Resolve via container inside jobs for convenience APIs. |
@@ -133,7 +133,6 @@ All models inherit from `AtlasModel`, which reads the target table names from co
 
 | Command | Description |
 | --- | --- |
-| `atlas-relay:enforce-timeouts` | Marks relays as failed when they exceed timeout thresholds. |
 | `atlas-relay:archive {--chunk=}` | Moves completed/failed relays into the archive table (`--chunk` controls the batch size; defaults to `500`). |
 | `atlas-relay:purge-archives` | Deletes archived relays older than `atlas-relay.archiving.purge_after_days`. |
 | `atlas-relay:relay:restore {id}` | Restores an archived relay into the live table. |
@@ -144,7 +143,6 @@ Register the recurring commands inside `routes/console.php` using Laravel’s sc
 ```php
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('atlas-relay:enforce-timeouts')->hourly();
 Schedule::command('atlas-relay:archive')->dailyAt('22:00');
 Schedule::command('atlas-relay:purge-archives')->dailyAt('23:00');
 ```
@@ -158,12 +156,10 @@ Adjust the cadence as needed for your environment or run the commands manually.
 | Key | Description / Env Override |
 | --- | --- |
 | `tables.relays`, `tables.relay_archives` | Customize table names. |
-| `payload.max_bytes` | Unified max byte size for captured payloads, stored responses, and exception summaries (default 64KB). |
-| `capture.sensitive_headers` | Header block list automatically masked to `*********`. |
-| `http.max_redirects`, `http.enforce_https` | Outbound HTTP safeties. |
+| `payload_max_bytes` | Unified max byte size for captured payloads, stored responses, and exception summaries (default 64KB). |
+| `sensitive_headers` | Header block list automatically masked to `*********` across inbound and outbound snapshots. |
 | `inbound.provider_guards`, `inbound.guards` | Define inbound guard mappings + profiles (`capture_forbidden`, `required_headers`, optional validator class) that enforce authentication before webhook processing. |
 | `archiving.archive_after_days`, `archiving.purge_after_days` | Retention windows for archival and purge jobs. Use `atlas-relay:archive --chunk=` to adjust batch size (default `500`). |
-| `automation.timeout_buffer_seconds`, `automation.processing_timeout_seconds` | Controls when timeout enforcement considers a relay overdue. |
 
 ---
 
@@ -173,7 +169,7 @@ Adjust the cadence as needed for your environment or run the commands manually.
 | --- | --- |
 | `Atlas\Relay\Enums\RelayType` | Distinguishes relay intent (`INBOUND`, `OUTBOUND`, `RELAY`). Builders infer the type automatically but you can call `type()` to override it. |
 | `Atlas\Relay\Enums\RelayFailure` | Canonical failure codes (`PAYLOAD_TOO_LARGE`, `NO_ROUTE_MATCH`, etc.) with helper `label()`/`description()`. Use them when forcing failures or handling lifecycle callbacks. |
-| `Atlas\Relay\Exceptions\RelayHttpException` | Thrown for HTTPS enforcement, redirect violations, or other outbound HTTP guard rails. Call `failure()` to obtain the associated `RelayFailure`. |
+| `Atlas\Relay\Exceptions\RelayHttpException` | Thrown when HTTP delivery is misconfigured (missing URL, unsupported method, payload/URL size violations). Call `failure()` to obtain the associated `RelayFailure`. |
 | `Atlas\Relay\Exceptions\ForbiddenWebhookException` | Raised when inbound guard profiles reject a webhook; consumers should return `403` to the sender and consult relay logs for `FORBIDDEN_GUARD` failures. |
 | `Atlas\Relay\Exceptions\InvalidWebhookPayloadException` | Raised when guard validators reject payload contents; consumers should return `422` (or similar) and inspect relay logs for `INVALID_PAYLOAD` failures. |
 | `Atlas\Relay\Exceptions\RelayJobFailedException` | Throw (or use `RelayJobHelper::fail()`) inside jobs to mark a relay as failed with custom attributes. |
