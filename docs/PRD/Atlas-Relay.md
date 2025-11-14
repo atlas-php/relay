@@ -1,28 +1,18 @@
 # PRD — Atlas Relay
 
-## Purpose
-Atlas Relay is the **authoritative system specification** for how all relays (inbound, outbound, or system‑created) are captured, processed, tracked, and archived.  
-It defines the **full data model**, **full lifecycle**, and **failure semantics** used across every PRD.
+Atlas Relay defines the unified system for capturing, processing, delivering, and archiving all relay types within the package, serving as the authoritative specification for lifecycle rules, data structures, and failure semantics.
 
-Specific flows:
-- Inbound/receive behavior → **[Receive Webhook Relay](./Receive-Webhook-Relay.md)**
-- Outbound/send behavior → **[Send Webhook Relay](./Send-Webhook-Relay.md)**
-- Archival retention → **[Archiving & Logging](./Archiving-and-Logging.md)**
-- Usage & examples → **[Example Usage](./Example-Usage.md)**
+## Table of Contents
+- [Relay Data Model](#relay-data-model)
+- [Failure Reason Enum](#failure-reason-enum)
+- [Relay Types](#relay-types)
+- [Status Lifecycle Rules](#status-lifecycle-rules)
+- [Capture Requirements](#capture-requirements)
+- [Delivery Requirements](#delivery-requirements)
+- [Archiving (Retention Requirements)](#archiving-retention-requirements)
+- [Cross‑PRD Linking (Canonical References)](#crossprd-linking-canonical-references)
 
-This document defines the unified requirements all other PRDs rely on.
-
----
-
-# 1. Relay Lifecycle (Core System Behavior)
-
-**Request or Payload → Capture → Execute (Event / Dispatch / HTTP) → Complete/Fail/Cancel → Archive**
-
-Lifecycle applies to **all** relay types.
-
----
-
-# 2. Relay Data Model (Full Field Specification)
+## Relay Data Model
 
 The following fields **must exist** on both `atlas_relays` and `atlas_relay_archives`.  
 Archive table must mirror this schema exactly (plus `archived_at`).
@@ -49,12 +39,7 @@ Archive table must mirror this schema exactly (plus `archived_at`).
 | `created_at`           | Capture timestamp                                                             |
 | `updated_at`           | State change timestamp                                                        |
 
-Inbound-specific rules → see **Receive Webhook Relay PRD**  
-Outbound-specific rules → see **Send Webhook Relay PRD**
-
----
-
-# 3. Failure Reason Enum (Complete Spec)
+## Failure Reason Enum
 
 Atlas Relay defines a unified failure enum used across inbound/outbound flows.  
 This list must remain complete and consistent across PRDs.
@@ -73,11 +58,7 @@ This list must remain complete and consistent across PRDs.
 | 205  | CONNECTION_ERROR      | Network/DNS/SSL failure                       |
 | 206  | CONNECTION_TIMEOUT    | HTTP timeout                                  |
 
-Inbound PRD links directly to this table for all failure codes it references.
-
----
-
-# 4. Relay Types
+## Relay Types
 
 | Enum       | Meaning                                                    |
 |------------|------------------------------------------------------------|
@@ -90,9 +71,7 @@ Relay type inference:
 - `http()` → OUTBOUND
 - `payload()` → RELAY unless overwritten
 
----
-
-# 5. Status Lifecycle Rules
+## Status Lifecycle Rules
 
 Universal rules applying to all relay types:
 
@@ -104,18 +83,7 @@ Universal rules applying to all relay types:
 | `FAILED`     | Execution finished with failure_reason    |
 | `CANCELLED`  | Explicit cancellation (`Relay::cancel()`) |
 
-Transitions:
-- `QUEUED → PROCESSING` when job/event/HTTP begins
-- `PROCESSING → COMPLETED` on success
-- `PROCESSING → FAILED` on exception/HTTP failure/etc.
-- `PROCESSING → CANCELLED` on manual cancel
-- `completed_at` always set for Completed/Failed/Cancelled
-
----
-
-# 6. Capture Requirements
-
-Unified capture rules:
+## Capture Requirements
 
 - Apply payload + header normalization
 - Mask sensitive headers
@@ -133,24 +101,22 @@ Unified capture rules:
 Inbound capture details → **Receive Webhook Relay PRD**  
 Outbound capture details → **Send Webhook Relay PRD**
 
----
-
-# 7. Delivery Requirements
+## Delivery Requirements
 
 Atlas supports three delivery modes:
 
-## 7.1 Event Execution
+### Event Execution
 - Synchronous execution
 - Exceptions → FAILED + EXCEPTION failure_reason
 - Completes relay immediately
 
-## 7.2 Job Dispatch
+### Job Dispatch
 - Uses Laravel’s native job dispatcher
 - Middleware ensures lifecycle tracking
 - Exceptions → FAILED
 - Supports chains (Bus::chain)
 
-## 7.3 HTTP Delivery
+### HTTP Delivery
 - Uses Laravel `Http` client directly
 - Records:
     - response status
@@ -159,9 +125,7 @@ Atlas supports three delivery modes:
 
 Outbound delivery details → **Send Webhook Relay PRD**
 
----
-
-# 8. Archiving (Retention Requirements)
+## Archiving (Retention Requirements)
 
 Full behavior defined in:  
 **[Archiving & Logging](./Archiving-and-Logging.md)**
@@ -170,17 +134,3 @@ Key requirements:
 - Archive relays after configured days
 - Purge archives after retention period
 - Archive tables mirror schema exactly
-
----
-
-# 9. Cross‑PRD Linking (Canonical References)
-
-- Inbound rules → **[Receive Webhook Relay](./Receive-Webhook-Relay.md)**
-- Outbound rules → **[Send Webhook Relay](./Send-Webhook-Relay.md)**
-- Usage examples → **[Example Usage](./Example-Usage.md)**
-- System retention → **[Archiving & Logging](./Archiving-and-Logging.md)**
-
----
-
-This document is the **source of truth** for all relay fields, lifecycle rules, and failure codes.  
-All sub‑PRDs must reference this document for schema and failure semantics.
