@@ -2,16 +2,15 @@
 # PRD — Payload Capture
 
 ## Overview
+
 Payload Capture is the first stage of Atlas Relay. It records every inbound payload—HTTP, internal, or programmatic—storing headers, source IP, and JSON data with full lifecycle visibility. Guard profiles run before capture to reject unauthenticated webhooks while still logging the attempt when configured. All captures become relay records and move into routing and processing.
 
----
-
 ## Capture Flow
-Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Store Relay Record → Ready for Processing
 
----
+Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Store Relay Record → Ready for Processing.
 
-### Relay Record Schema (`atlas_relays`)
+## Relay Record Schema (`atlas_relays`)
+
 | Field                  | Description                                             |
 |------------------------|---------------------------------------------------------|
 | `id`                   | Relay ID.                                               |
@@ -34,9 +33,8 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 | `created_at`           | Capture timestamp.                                      |
 | `updated_at`           | Last state change.                                      |
 
----
-
 ## Failure Reason Enum (`Enums\RelayFailure`)
+
 | Code | Label                 | Description                                               |
 |------|-----------------------|-----------------------------------------------------------|
 | 100  | EXCEPTION             | Uncaught exception.                                       |
@@ -52,9 +50,8 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 | 205  | CONNECTION_ERROR      | Network/SSL/DNS failure.                                  |
 | 206  | CONNECTION_TIMEOUT    | HTTP timeout.                                             |
 
----
-
 ## Provider Inbound Guards
+
 Provider-level guard profiles enforce authentication headers before any webhook proceeds. Configure them in `config/atlas-relay.php`:
 
 ```php
@@ -77,17 +74,8 @@ Provider-level guard profiles enforce authentication headers before any webhook 
 
 Guards can be mapped via `setProvider('stripe')` or specified explicitly with `guard('stripe-signature')`. When the guard rejects a request, Atlas throws `Atlas\Relay\Exceptions\ForbiddenWebhookException` and marks the relay with `RelayFailure::FORBIDDEN_GUARD` when `capture_forbidden` is `true`. Set `capture_forbidden` to `false` for test/local providers to skip persisting failed attempts while still enforcing the guard.
 
----
-
-## Cache Behavior
-- Cache key: domain + path + method.
-- Lifetime: 20 minutes.
-- Invalidated on domain/route changes.
-- Applies only to AutoRoute lookups; manual builder flows bypass caching entirely.
-
----
-
 ## Observability
+
 All lifecycle details—including attempts, responses, durations, and failure reasons—are recorded directly on the `atlas_relays` table. Configuration flags are read from `atlas_relay_routes` when a relay is associated with a route.
 
 ---
