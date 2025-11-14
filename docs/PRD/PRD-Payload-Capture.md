@@ -2,16 +2,7 @@
 # PRD — Payload Capture
 
 ## Overview
-Payload Capture is the first stage of Atlas Relay. It records every inbound payload—HTTP, internal, or programmatic—storing headers, source IP, and JSON data with full lifecycle visibility. All captures become relay records and move into routing and processing.
-
----
-
-## Goals
-- Persist every inbound request safely.
-- Enforce size limits and validation.
-- Normalize headers and metadata.
-- Support optional AutoRoute lookups with caching.
-- Maintain full observability, including failures.
+Payload Capture is the first stage of Atlas Relay. It records every inbound payload—HTTP, internal, or programmatic—storing headers, source IP, and JSON data with full lifecycle visibility. Guard profiles run before capture to reject unauthenticated webhooks while still logging the attempt when configured. All captures become relay records and move into routing and processing.
 
 ---
 
@@ -46,23 +37,24 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 ---
 
 ## Failure Reason Enum (`Enums\RelayFailure`)
-| Code | Label                 | Description              |
-|------|-----------------------|--------------------------|
-| 100  | EXCEPTION             | Uncaught exception.      |
-| 101  | PAYLOAD_TOO_LARGE     | Payload exceeds 64KB.    |
-| 102  | NO_ROUTE_MATCH        | No route match.          |
-| 103  | CANCELLED             | Manually cancelled.      |
-| 104  | ROUTE_TIMEOUT         | Routing timeout.         |
-| 105  | INVALID_PAYLOAD       | JSON decode failure.     |
-| 201  | HTTP_ERROR            | Non‑2xx response.        |
-| 203  | TOO_MANY_REDIRECTS    | Redirect limit exceeded. |
-| 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch.  |
-| 205  | CONNECTION_ERROR      | Network/SSL/DNS failure. |
-| 206  | CONNECTION_TIMEOUT    | Outbound timeout.        |
+| Code | Label                 | Description                                               |
+|------|-----------------------|-----------------------------------------------------------|
+| 100  | EXCEPTION             | Uncaught exception.                                       |
+| 101  | PAYLOAD_TOO_LARGE     | Payload exceeds 64KB.                                     |
+| 102  | NO_ROUTE_MATCH        | No route match.                                           |
+| 103  | CANCELLED             | Manually cancelled.                                       |
+| 104  | ROUTE_TIMEOUT         | Routing timeout.                                          |
+| 105  | INVALID_PAYLOAD       | JSON decode failure.                                      |
+| 108  | FORBIDDEN_GUARD       | Provider guard rejected the request before processing.    |
+| 201  | HTTP_ERROR            | Non‑2xx response.                                         |
+| 203  | TOO_MANY_REDIRECTS    | Redirect limit exceeded.                                  |
+| 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch.                                   |
+| 205  | CONNECTION_ERROR      | Network/SSL/DNS failure.                                  |
+| 206  | CONNECTION_TIMEOUT    | HTTP timeout.                                             |
 
 ---
 
-### Provider Inbound Guards
+## Provider Inbound Guards
 Provider-level guard profiles enforce authentication headers before any webhook proceeds. Configure them in `config/atlas-relay.php`:
 
 ```php
@@ -91,22 +83,11 @@ Guards can be mapped via `setProvider('stripe')` or specified explicitly with `g
 - Cache key: domain + path + method.
 - Lifetime: 20 minutes.
 - Invalidated on domain/route changes.
+- Applies only to AutoRoute lookups; manual builder flows bypass caching entirely.
 
 ---
-
-> **AutoRoute lifecycle config**
->
-> Retry/delay/timeout settings now live exclusively on the `atlas_relay_routes` table. Relays simply reference `route_id`; schedulers and delivery jobs read the latest route definition when enforcement is required. Manual relays (no `route_id`) do not opt into these automation features.
 
 ## Observability
 All lifecycle details—including attempts, responses, durations, and failure reasons—are recorded directly on the `atlas_relays` table. Configuration flags are read from `atlas_relay_routes` when a relay is associated with a route.
-
----
-
-## Edge Cases
-- Empty body → stored with empty JSON.
-- Malformed body → raw body stored; marked `INVALID_PAYLOAD`.
-- Duplicates allowed (dedupe token optional).
-- Concurrent requests isolated via atomic inserts.
 
 ---
