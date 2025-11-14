@@ -43,7 +43,7 @@ Additional setup instructions (config publish, migrations, scheduler, etc.) live
 
 ### Receive a Webhook
 
-`Relay::request($request)` automatically grabs the inbound payload (JSON) and sends it into your events. (See [Payload Capture](./docs/PRD/PRD-Payload-Capture.md)).
+Using `Relay::request($request)` automatically grabs the inbound payload (JSON) and sends it into your events for processing. See [Payload Capture](./docs/PRD/PRD-Payload-Capture.md) for more details.
 
 ```php
 // The most common way
@@ -87,12 +87,14 @@ Atlas will record the response status and payload of your request (See [Outbound
 ---
 
 ### Auto-Route Dispatch (Inbound → Outbound)
+
 ```php
 Relay::request($request)->dispatchAutoRoute();
 ```
 Receives a webhook and automatically delivers it to the correct outbound destination using your configured routes and captured payload. (Relates to [Routing](./docs/PRD/PRD-Routing.md))
 
 ### Auto-Route Immediate Delivery
+
 ```php
 $response = Relay::request($request)->autoRouteImmediately();
 ```
