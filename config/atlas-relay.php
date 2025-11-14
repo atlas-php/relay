@@ -16,7 +16,6 @@ return [
     'archiving' => [
         'archive_after_days' => env('ATLAS_RELAY_ARCHIVE_DAYS', 30),
         'purge_after_days' => env('ATLAS_RELAY_PURGE_DAYS', 180),
-        'chunk_size' => env('ATLAS_RELAY_ARCHIVE_CHUNK_SIZE', 500),
     ],
 
     'capture' => [
@@ -28,8 +27,6 @@ return [
             'api-key',
             'cookie',
         ],
-        'header_whitelist' => [],
-        'masked_value' => env('ATLAS_RELAY_SENSITIVE_HEADER_MASK', '***'),
     ],
 
     'lifecycle' => [

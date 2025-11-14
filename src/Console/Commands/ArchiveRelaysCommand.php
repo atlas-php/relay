@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ArchiveRelaysCommand extends Command
 {
+    public const DEFAULT_CHUNK_SIZE = 500;
+
     protected $signature = 'atlas-relay:archive {--chunk= : Number of relays per chunk}';
 
     protected $description = 'Moves completed/failed relays into the archive table based on retention rules.';
@@ -29,13 +31,13 @@ class ArchiveRelaysCommand extends Command
         if ($this->getDefinition()->hasOption('chunk')) {
             $this->getDefinition()
                 ->getOption('chunk')
-                ->setDefault(config('atlas-relay.archiving.chunk_size', 500));
+                ->setDefault(self::DEFAULT_CHUNK_SIZE);
         }
     }
 
     public function handle(): int
     {
-        $chunkSize = (int) ($this->option('chunk') ?? config('atlas-relay.archiving.chunk_size', 500));
+        $chunkSize = (int) ($this->option('chunk') ?? self::DEFAULT_CHUNK_SIZE);
         $archiveAfterDays = (int) config('atlas-relay.archiving.archive_after_days', 30);
         $cutoff = Carbon::now()->subDays($archiveAfterDays);
 

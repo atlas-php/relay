@@ -39,7 +39,7 @@ Relay Created → Inline Updates → Completed/Failed → Archived → Purged
 Ran daily:
 
 1. Select relays older than `ATLAS_RELAY_ARCHIVE_DAYS`.
-2. Copy to archive in batches (`ATLAS_RELAY_ARCHIVE_CHUNK_SIZE`, default 500).
+2. Copy to archive in batches controlled by the `--chunk` option on `atlas-relay:archive` (default 500).
 3. Verify integrity (counts/checksums).
 4. Delete originals in the same transaction.
 5. Continue until all eligible records are moved.
@@ -62,11 +62,12 @@ Ran nightly after archiving:
 ---
 
 ## Configuration
-| Variable                         | Default | Description                     |
-|----------------------------------|---------|---------------------------------|
-| `ATLAS_RELAY_ARCHIVE_DAYS`       | 30      | Age threshold to archive        |
-| `ATLAS_RELAY_PURGE_DAYS`         | 180     | Age threshold to purge archives |
-| `ATLAS_RELAY_ARCHIVE_CHUNK_SIZE` | 500     | Batch size for migration        |
+| Variable                   | Default | Description                     |
+|----------------------------|---------|---------------------------------|
+| `ATLAS_RELAY_ARCHIVE_DAYS` | 30      | Age threshold to archive        |
+| `ATLAS_RELAY_PURGE_DAYS`   | 180     | Age threshold to purge archives |
+
+Batch size for archiving is controlled at runtime via `php artisan atlas-relay:archive --chunk=500` (default `500` when omitted).
 
 ---
 

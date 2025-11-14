@@ -92,7 +92,7 @@ class RelayHttpClient
             if (! is_string($url)) {
                 throw new RelayHttpException(
                     'HTTP relay calls require a target URL.',
-                    RelayFailure::OUTBOUND_HTTP_ERROR
+                    RelayFailure::HTTP_ERROR
                 );
             }
 
@@ -101,7 +101,7 @@ class RelayHttpClient
 
                 throw new RelayHttpException(
                     sprintf('Unsupported HTTP method [%s] for relay delivery.', $method),
-                    RelayFailure::OUTBOUND_HTTP_ERROR
+                    RelayFailure::HTTP_ERROR
                 );
             }
 
@@ -109,7 +109,7 @@ class RelayHttpClient
             $this->registerPayloadFromArguments($relay, $arguments);
             $this->registerDestination($relay, $url, $resolvedMethod);
         } catch (RelayHttpException $exception) {
-            $failure = $exception->failure() ?? RelayFailure::OUTBOUND_HTTP_ERROR;
+            $failure = $exception->failure() ?? RelayFailure::HTTP_ERROR;
 
             $this->lifecycle->markFailed($relay, $failure);
             $this->lifecycle->recordResponse($relay, null, $exception->getMessage());
@@ -142,7 +142,7 @@ class RelayHttpClient
             );
         } catch (RequestException $exception) {
             $duration = $this->durationSince($startedAt);
-            $this->lifecycle->markFailed($relay, RelayFailure::OUTBOUND_HTTP_ERROR, [], $duration);
+            $this->lifecycle->markFailed($relay, RelayFailure::HTTP_ERROR, [], $duration);
 
             throw $exception;
         }
@@ -158,7 +158,7 @@ class RelayHttpClient
         if ($response->successful()) {
             $this->lifecycle->markCompleted($relay, [], $duration);
         } else {
-            $this->lifecycle->markFailed($relay, RelayFailure::OUTBOUND_HTTP_ERROR, [], $duration);
+            $this->lifecycle->markFailed($relay, RelayFailure::HTTP_ERROR, [], $duration);
         }
 
         return $response;
@@ -178,7 +178,7 @@ class RelayHttpClient
 
         throw new RelayHttpException(
             'Atlas Relay HTTP deliveries require HTTPS targets.',
-            RelayFailure::OUTBOUND_HTTP_ERROR
+            RelayFailure::HTTP_ERROR
         );
     }
 
@@ -429,7 +429,7 @@ class RelayHttpClient
         if (strlen($url) > $maxLength) {
             throw new RelayHttpException(
                 sprintf('URL may not exceed %d characters; received %d.', $maxLength, strlen($url)),
-                RelayFailure::OUTBOUND_HTTP_ERROR
+                RelayFailure::HTTP_ERROR
             );
         }
 

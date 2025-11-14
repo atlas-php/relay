@@ -47,18 +47,17 @@ Inbound Request → Normalize Payload/Headers → Optional Route Lookup → Stor
 ## Failure Reason Enum (`Enums\RelayFailure`)
 | Code | Label                 | Description              |
 |------|-----------------------|--------------------------|
-| 100  | UNKNOWN               | Unexpected error.        |
+| 100  | EXCEPTION             | Uncaught exception.      |
 | 101  | PAYLOAD_TOO_LARGE     | Payload exceeds 64KB.    |
 | 102  | NO_ROUTE_MATCH        | No route match.          |
 | 103  | CANCELLED             | Manually cancelled.      |
 | 104  | ROUTE_TIMEOUT         | Routing timeout.         |
 | 105  | INVALID_PAYLOAD       | JSON decode failure.     |
-| 201  | OUTBOUND_HTTP_ERROR   | Non‑2xx response.        |
+| 201  | HTTP_ERROR            | Non‑2xx response.        |
 | 203  | TOO_MANY_REDIRECTS    | Redirect limit exceeded. |
 | 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch.  |
 | 205  | CONNECTION_ERROR      | Network/SSL/DNS failure. |
 | 206  | CONNECTION_TIMEOUT    | Outbound timeout.        |
-| 207  | EXCEPTION             | Uncaught exception.      |
 
 ---
 

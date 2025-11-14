@@ -213,7 +213,7 @@ class HttpDeliveryTest extends TestCase
         $relay = $this->assertRelayInstance($builder->relay());
         $headers = $relay->headers ?? [];
 
-        $this->assertSame('***', $headers['authorization'] ?? null);
+        $this->assertSame('*********', $headers['authorization'] ?? null);
         $this->assertSame('relay-run', $headers['x-trace'] ?? null);
     }
 
@@ -231,7 +231,7 @@ class HttpDeliveryTest extends TestCase
 
         $relay = $this->assertRelayInstance($builder->relay());
         $this->assertSame(RelayStatus::FAILED, $relay->status);
-        $this->assertSame(RelayFailure::OUTBOUND_HTTP_ERROR->value, $relay->failure_reason);
+        $this->assertSame(RelayFailure::HTTP_ERROR->value, $relay->failure_reason);
     }
 
     public function test_http_requires_https_targets_marks_failure(): void
@@ -247,7 +247,7 @@ class HttpDeliveryTest extends TestCase
 
         $relay = $this->assertRelayInstance($builder->relay());
         $this->assertSame(RelayStatus::FAILED, $relay->status);
-        $this->assertSame(RelayFailure::OUTBOUND_HTTP_ERROR->value, $relay->failure_reason);
+        $this->assertSame(RelayFailure::HTTP_ERROR->value, $relay->failure_reason);
         $this->assertNull($relay->response_http_status);
         $this->assertSame('Atlas Relay HTTP deliveries require HTTPS targets.', $relay->response_payload);
     }
@@ -270,7 +270,7 @@ class HttpDeliveryTest extends TestCase
 
         $relay = $this->assertRelayInstance($builder->relay());
         $this->assertSame(RelayStatus::FAILED, $relay->status);
-        $this->assertSame(RelayFailure::OUTBOUND_HTTP_ERROR->value, $relay->failure_reason);
+        $this->assertSame(RelayFailure::HTTP_ERROR->value, $relay->failure_reason);
         $this->assertNull($relay->response_http_status);
         $this->assertSame('HTTP relay calls require a target URL.', $relay->response_payload);
     }

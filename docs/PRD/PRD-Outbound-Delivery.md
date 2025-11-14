@@ -95,17 +95,16 @@ Rules:
 
 | Code | Label                 | Description              |
 |------|-----------------------|--------------------------|
-| 100  | UNKNOWN               | Unexpected error         |
+| 100  | EXCEPTION             | Uncaught exception       |
 | 101  | PAYLOAD_TOO_LARGE     | Payload >64KB            |
 | 102  | NO_ROUTE_MATCH        | No route match           |
 | 103  | CANCELLED             | Manually cancelled       |
 | 104  | ROUTE_TIMEOUT         | Route resolution timeout |
-| 201  | OUTBOUND_HTTP_ERROR   | Non‑2xx                  |
+| 201  | HTTP_ERROR            | Non‑2xx                  |
 | 203  | TOO_MANY_REDIRECTS    | >3 redirects             |
 | 204  | REDIRECT_HOST_CHANGED | Redirect host mismatch   |
 | 205  | CONNECTION_ERROR      | Network/SSL/DNS          |
 | 206  | CONNECTION_TIMEOUT    | Outbound timeout         |
-| 207  | EXCEPTION             | Uncaught exception       |
 
 ---
 

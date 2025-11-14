@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Log;
  */
 class RelayCaptureService
 {
+    private const MASKED_HEADER_VALUE = '*********';
+
     public function __construct(
         private readonly Relay $relay,
         private readonly RequestPayloadExtractor $payloadExtractor
@@ -141,9 +143,7 @@ class RelayCaptureService
             return [];
         }
 
-        $whitelist = $this->prepareHeaderLookup(config('atlas-relay.capture.header_whitelist', []));
         $sensitive = $this->prepareHeaderLookup(config('atlas-relay.capture.sensitive_headers', []));
-        $maskedValue = config('atlas-relay.capture.masked_value', '***');
 
         $normalized = [];
 
@@ -155,8 +155,8 @@ class RelayCaptureService
                 continue;
             }
 
-            if ($this->shouldMaskHeader($key, $whitelist, $sensitive)) {
-                $normalized[$key] = $maskedValue;
+            if ($this->shouldMaskHeader($key, $sensitive)) {
+                $normalized[$key] = self::MASKED_HEADER_VALUE;
 
                 continue;
             }
@@ -256,15 +256,10 @@ class RelayCaptureService
     }
 
     /**
-     * @param  array<string, bool>  $whitelist
      * @param  array<string, bool>  $sensitive
      */
-    private function shouldMaskHeader(string $header, array $whitelist, array $sensitive): bool
+    private function shouldMaskHeader(string $header, array $sensitive): bool
     {
-        if (isset($whitelist[$header])) {
-            return false;
-        }
-
         return isset($sensitive[$header]);
     }
 

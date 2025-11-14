@@ -35,17 +35,15 @@ class RelayCaptureTest extends TestCase
         $this->assertSame('127.0.0.1', $relay->source_ip);
         $this->assertSame(['status' => 'queued'], $relay->payload);
         $headers = $relay->headers ?? [];
-        $this->assertSame('***', $headers['authorization'] ?? null);
+        $this->assertSame('*********', $headers['authorization'] ?? null);
         $this->assertSame('Value', $headers['x-custom'] ?? null);
     }
 
-    public function test_whitelisted_headers_are_not_masked(): void
+    public function test_custom_sensitive_headers_are_masked(): void
     {
         $originalSensitive = config('atlas-relay.capture.sensitive_headers');
-        $originalWhitelist = config('atlas-relay.capture.header_whitelist');
 
         config()->set('atlas-relay.capture.sensitive_headers', ['x-secret-token']);
-        config()->set('atlas-relay.capture.header_whitelist', ['X-Secret-Token']);
 
         $request = Request::create('/relay', 'POST');
         $request->headers->set('X-Secret-Token', '12345');
@@ -53,10 +51,9 @@ class RelayCaptureTest extends TestCase
         $relay = Relay::request($request)->capture();
 
         $headers = $relay->headers ?? [];
-        $this->assertSame('12345', $headers['x-secret-token'] ?? null);
+        $this->assertSame('*********', $headers['x-secret-token'] ?? null);
 
         config()->set('atlas-relay.capture.sensitive_headers', $originalSensitive);
-        config()->set('atlas-relay.capture.header_whitelist', $originalWhitelist);
     }
 
     public function test_payload_size_limit_marks_relay_failed(): void

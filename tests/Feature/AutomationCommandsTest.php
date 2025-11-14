@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atlas\Relay\Tests\Feature;
 
+use Atlas\Relay\Console\Commands\ArchiveRelaysCommand;
 use Atlas\Relay\Enums\RelayStatus;
 use Atlas\Relay\Models\Relay;
 use Atlas\Relay\Models\RelayArchive;
@@ -128,10 +129,8 @@ class AutomationCommandsTest extends TestCase
         $this->assertDatabaseMissing(RelayArchive::query()->getModel()->getTable(), ['id' => $relay->id]);
     }
 
-    public function test_archive_command_uses_configured_chunk_default_when_option_missing(): void
+    public function test_archive_command_uses_default_chunk_size_when_option_missing(): void
     {
-        config(['atlas-relay.archiving.chunk_size' => 2]);
-
         foreach (range(1, 3) as $index) {
             Relay::query()->create([
                 'source_ip' => '127.0.0.1',
@@ -151,8 +150,16 @@ class AutomationCommandsTest extends TestCase
         $queries = collect(DB::getQueryLog())->pluck('query');
 
         $this->assertTrue(
-            $queries->contains(fn (string $query): bool => str_contains(strtolower($query), 'limit 2')),
-            'Expected archive command to query relays using configured chunk size of 2.'
+            $queries->contains(
+                fn (string $query): bool => str_contains(
+                    strtolower($query),
+                    sprintf('limit %d', ArchiveRelaysCommand::DEFAULT_CHUNK_SIZE)
+                )
+            ),
+            sprintf(
+                'Expected archive command to query relays using default chunk size of %d.',
+                ArchiveRelaysCommand::DEFAULT_CHUNK_SIZE
+            )
         );
     }
 }
