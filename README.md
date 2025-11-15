@@ -1,5 +1,4 @@
 # Atlas Relay
-
 **Atlas Relay** is a Laravel package providing a unified, reliable system for receiving webhooks, processing actions, and sending outbound HTTP requests — all with full lifecycle tracking and auditability.
 
 ## Table of Contents
